@@ -1,23 +1,38 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 function App() {
+  const audioContext = new AudioContext();
+
+  const request = new XMLHttpRequest();
+  let audioBuffer: AudioBuffer | null = null;
+  request.open("GET", '/audios/BabyElephantWalk60.wav', true);
+  request.responseType = "arraybuffer";
+
+  request.onload = function() {
+    audioContext.decodeAudioData(
+      request.response,
+      function(buffer) {
+        audioBuffer = buffer;
+      },
+      function(error) {
+        console.error('decodeAudioData error', error);
+      }
+    );
+  }
+  request.send();
+
+  const onClickButton = () => {
+    const source = audioContext.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(audioContext.destination);
+    source.start(0);
+  }
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <button value="button" onClick={onClickButton}>再生</button>
       </header>
     </div>
   );
