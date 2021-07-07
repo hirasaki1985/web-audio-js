@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { LineChart, Line, ResponsiveContainer } from 'recharts'
+import AudioFrequencyHelper from '../../helpers/AudioFrequencyHelper'
 
 export interface AudioFrequencyAtomProps {
   audioBuffer?: Uint8Array
@@ -50,14 +51,36 @@ const data = [
   },
 ]
 
+export interface frequencyData {
+  frequency: number
+}
+
 const AudioFrequencyAtom: React.FC<AudioFrequencyAtomProps> = (
   props: AudioFrequencyAtomProps,
 ) => {
   const { audioBuffer } = props
+
+  const data: frequencyData[] = useMemo(() => {
+    if (audioBuffer == null) return []
+
+    const _data = AudioFrequencyHelper.normalizationY(audioBuffer)
+
+    console.log('AudioFrequencyAtom _data', _data)
+    return Array.from(_data).map((_item) => ({
+      frequency: _item,
+    }))
+  }, [audioBuffer])
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart width={300} height={100} data={data}>
-        <Line type="monotone" dataKey="pv" stroke="#8884d8" strokeWidth={2} />
+        <Line
+          type="monotone"
+          dataKey="frequency"
+          stroke="#8884d8"
+          strokeWidth={1}
+          dot={false}
+        />
       </LineChart>
     </ResponsiveContainer>
   )

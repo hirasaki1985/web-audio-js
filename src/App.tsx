@@ -6,28 +6,46 @@ import AudioFrequencyAtom from './components/atoms/AudioFrequencyAtom'
 
 function App() {
   const [audioModel, setAudioModel] = useState(new AudioModel())
+  const [sampleBuffer, setSampleBuffer] = useState<Uint8Array>()
 
   useEffect(() => {
     audioModel.loadAudio('/audios/BabyElephantWalk60.wav', 'sample')
   }, [])
 
   const onClickButton = async () => {
-    await audioModel.play('sample')
+    // await audioModel.play('sample')
     await viewAnalyser()
   }
 
   const viewAnalyser = async () => {
     const analyser = audioModel.getAnalyser()
 
-    const times = new Uint8Array(analyser.fftSize)
     /**
      * 振り幅1で考えると、
      * 1 = 255,
      * 0(無音) = 128,
      * -1 = 0
      */
-    analyser.getByteTimeDomainData(times)
-    console.log(times)
+    let isEnd = true
+    const times: Uint8Array[] = []
+    do {
+      const time = new Uint8Array(analyser.fftSize)
+      analyser.getByteTimeDomainData(time)
+      console.log(time)
+
+      times.push(time)
+
+      isEnd = false
+    } while (isEnd)
+    setSampleBuffer(
+      Array.from(times).reduce((pre, current) => {
+        const mergedArray = new Uint8Array(pre.length + current.length)
+        mergedArray.set(pre)
+        mergedArray.set(current, pre.length)
+
+        return mergedArray
+      }),
+    )
   }
 
   return (
@@ -38,7 +56,7 @@ function App() {
         </button>
       </header>
       <StyledMain>
-        <AudioFrequencyAtom />
+        <AudioFrequencyAtom audioBuffer={sampleBuffer} />
       </StyledMain>
     </div>
   )
