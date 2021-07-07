@@ -1,39 +1,22 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import './App.css'
+import AudioModel from './models/AudioModel'
 
 function App() {
-  const audioContext = new AudioContext()
+  const [audioModel, setAudioModel] = useState(new AudioModel())
 
-  const request = new XMLHttpRequest()
-  let audioBuffer: AudioBuffer | null = null
-  request.open('GET', '/audios/BabyElephantWalk60.wav', true)
-  request.responseType = 'arraybuffer'
+  useEffect(() => {
+    audioModel.loadAudio('/audios/BabyElephantWalk60.wav', 'sample')
+  }, [])
 
-  request.onload = async () => {
-    await audioContext.decodeAudioData(
-      request.response,
-      (buffer) => {
-        audioBuffer = buffer
-      },
-      (error) => {
-        console.error('decodeAudioData error', error)
-      },
-    )
-  }
-
-  request.send()
-
-  const onClickButton = () => {
-    const source = audioContext.createBufferSource()
-    source.buffer = audioBuffer
-    source.connect(audioContext.destination)
-    source.start(0)
+  const onClickButton = async () => {
+    await audioModel.play('sample')
   }
 
   return (
     <div className="App">
       <header className="App-header">
-        <button value="button" onClick={onClickButton}>
+        <button type="button" onClick={onClickButton}>
           再生
         </button>
       </header>
