@@ -31,6 +31,24 @@ export default class AudioModel {
   }
 
   /**
+   * get analyser
+   */
+  public getAnalyser = (): AnalyserNode => {
+    const analyser = this.audioContext.createAnalyser()
+    // Create the instance of OscillatorNode
+    const oscillator = this.audioContext.createOscillator()
+
+    // for legacy browsers
+    // oscillator.start = oscillator.start || oscillator.noteOn
+    // oscillator.stop = oscillator.stop || oscillator.noteOff
+    // OscillatorNode (Input) -> AnalyserNode (Visualization) -> AudioDestinationNode (Output)
+    oscillator.connect(analyser)
+    analyser.connect(this.audioContext.destination)
+
+    return analyser
+  }
+
+  /**
    * get sound
    */
   public getSound = (name: string): ApiSound | undefined =>
