@@ -1,41 +1,44 @@
-import React from 'react';
-import './App.css';
+import React from 'react'
+import './App.css'
 
 function App() {
-  const audioContext = new AudioContext();
+  const audioContext = new AudioContext()
 
-  const request = new XMLHttpRequest();
-  let audioBuffer: AudioBuffer | null = null;
-  request.open("GET", '/audios/BabyElephantWalk60.wav', true);
-  request.responseType = "arraybuffer";
+  const request = new XMLHttpRequest()
+  let audioBuffer: AudioBuffer | null = null
+  request.open('GET', '/audios/BabyElephantWalk60.wav', true)
+  request.responseType = 'arraybuffer'
 
-  request.onload = function() {
-    audioContext.decodeAudioData(
+  request.onload = async () => {
+    await audioContext.decodeAudioData(
       request.response,
-      function(buffer) {
-        audioBuffer = buffer;
+      (buffer) => {
+        audioBuffer = buffer
       },
-      function(error) {
-        console.error('decodeAudioData error', error);
-      }
-    );
+      (error) => {
+        console.error('decodeAudioData error', error)
+      },
+    )
   }
-  request.send();
+
+  request.send()
 
   const onClickButton = () => {
-    const source = audioContext.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(audioContext.destination);
-    source.start(0);
+    const source = audioContext.createBufferSource()
+    source.buffer = audioBuffer
+    source.connect(audioContext.destination)
+    source.start(0)
   }
 
   return (
     <div className="App">
       <header className="App-header">
-        <button value="button" onClick={onClickButton}>再生</button>
+        <button value="button" onClick={onClickButton}>
+          再生
+        </button>
       </header>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
