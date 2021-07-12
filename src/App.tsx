@@ -3,49 +3,22 @@ import styled from 'styled-components'
 import './App.css'
 import AudioModel from './models/AudioModel'
 import AudioFrequencyAtom from './components/atoms/AudioFrequencyAtom'
+import AudioFrequencyHelper from './helpers/AudioFrequencyHelper'
 
 function App() {
+  const audioName = 'sample'
   const [audioModel, setAudioModel] = useState(new AudioModel())
-  const [sampleBuffer, setSampleBuffer] = useState<Uint8Array>()
+  const [wavFilePath, setWavFilePath] = useState('/audios/piano.wav')
+  const [audioBuffer, setAudioBuffer] = useState<AudioBuffer>()
 
   useEffect(() => {
-    audioModel.loadAudio('/audios/BabyElephantWalk60.wav', 'sample')
+    audioModel.loadAudio(wavFilePath, audioName)
   }, [])
 
   const onClickButton = async () => {
     // await audioModel.play('sample')
-    await viewAnalyser()
-  }
-
-  const viewAnalyser = async () => {
-    const analyser = audioModel.getAnalyser()
-
-    /**
-     * 振り幅1で考えると、
-     * 1 = 255,
-     * 0(無音) = 128,
-     * -1 = 0
-     */
-    let isEnd = true
-    const times: Uint8Array[] = []
-    do {
-      const time = new Uint8Array(analyser.fftSize)
-      analyser.getByteTimeDomainData(time)
-      console.log(time)
-
-      times.push(time)
-
-      isEnd = false
-    } while (isEnd)
-    setSampleBuffer(
-      Array.from(times).reduce((pre, current) => {
-        const mergedArray = new Uint8Array(pre.length + current.length)
-        mergedArray.set(pre)
-        mergedArray.set(current, pre.length)
-
-        return mergedArray
-      }),
-    )
+    const buffer = audioModel.getBuffer(audioName)
+    setAudioBuffer(buffer)
   }
 
   return (
@@ -54,9 +27,19 @@ function App() {
         <button type="button" onClick={onClickButton}>
           再生
         </button>
+        <input
+          type="text"
+          name="audio_file_path"
+          value={wavFilePath}
+          onChange={(e) => {
+            setWavFilePath(e.target.value)
+          }}
+        />
       </header>
       <StyledMain>
-        <AudioFrequencyAtom audioBuffer={sampleBuffer} />
+        <AudioFrequencyAtom
+          plotData={AudioFrequencyHelper.convertPlotData(audioBuffer)}
+        />
       </StyledMain>
     </div>
   )

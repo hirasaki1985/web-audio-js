@@ -30,6 +30,19 @@ export default class AudioModel {
     }
   }
 
+  public getBuffer = (name: string): AudioBuffer => {
+    const sound = this.getSound(name)
+    if (sound && sound.buffer) {
+      return sound.buffer
+    }
+
+    return new AudioBuffer({
+      length: 0,
+      numberOfChannels: 0,
+      sampleRate: 0,
+    })
+  }
+
   /**
    * get analyser
    */
