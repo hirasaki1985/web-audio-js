@@ -30,6 +30,8 @@ export default class AudioModel {
     }
   }
 
+  public getApiSounds = (): ApiSound[] => this.apiSounds
+
   public getBuffer = (name: string): AudioBuffer => {
     const sound = this.getSound(name)
     if (sound && sound.buffer) {
@@ -76,27 +78,34 @@ export default class AudioModel {
     callbacks: AudioLoadCallbacks | undefined = undefined,
   ) => {
     const request = new XMLHttpRequest()
-    let audioBuffer: AudioBuffer | null = null
     request.open('GET', url, true)
     request.responseType = 'arraybuffer'
 
     request.onload = async () => {
       await this.audioContext.decodeAudioData(
         request.response,
+
+        /**
+         * success
+         */
         (buffer) => {
-          audioBuffer = buffer
+          // add to api sounds
+          this.apiSounds.push({
+            name,
+            buffer,
+          })
+
           if (callbacks) callbacks.success()
         },
+
+        /**
+         * error
+         */
         (error) => {
           console.error('decodeAudioData error', error)
           if (callbacks) callbacks.error()
         },
       )
-
-      this.apiSounds.push({
-        name,
-        buffer: audioBuffer,
-      })
     }
 
     request.send()

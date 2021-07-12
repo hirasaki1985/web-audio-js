@@ -2,7 +2,7 @@ import { frequencyData } from '../components/atoms/AudioFrequencyAtom'
 
 export default class AudioFrequencyHelper {
   public static convertPlotData(
-    buffer?: AudioBuffer,
+    buffer?: AudioBuffer | null,
     channel: number = 0,
     tMin: number = 0,
     tMax: number = 4000,

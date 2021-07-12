@@ -3,6 +3,8 @@ import { LineChart, Line, ResponsiveContainer } from 'recharts'
 
 export interface AudioFrequencyAtomProps {
   plotData: frequencyData[]
+  width?: number
+  height?: number
 }
 
 /**
@@ -16,7 +18,7 @@ export interface frequencyData {
 const AudioFrequencyAtom: React.FC<AudioFrequencyAtomProps> = (
   props: AudioFrequencyAtomProps,
 ) => {
-  const { plotData } = props
+  const { plotData, width, height } = props
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -31,6 +33,11 @@ const AudioFrequencyAtom: React.FC<AudioFrequencyAtomProps> = (
       </LineChart>
     </ResponsiveContainer>
   )
+}
+
+AudioFrequencyAtom.defaultProps = {
+  width: 500,
+  height: 300,
 }
 
 export default AudioFrequencyAtom
