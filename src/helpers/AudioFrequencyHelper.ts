@@ -1,6 +1,9 @@
 import { frequencyData } from '../components/atoms/AudioFrequencyAtom'
 
 export default class AudioFrequencyHelper {
+  /**
+   * audioBufferをグラフで表示する形式に変更する
+   */
   public static convertPlotData(
     buffer?: AudioBuffer | null,
     channel: number = 0,
@@ -15,8 +18,6 @@ export default class AudioFrequencyHelper {
     const dt = 1 / sampleRate // x軸刻み幅
     const tmp: frequencyData[] = [] // プロットデータ配列
 
-    console.log('audioData', audioData)
-    console.log('sampleRate', sampleRate)
     audioData.forEach((_audio, i) => {
       const t = dt * i * 1000 // 現在時刻 [ms]
       if (t < tMin) return // 描画範囲外のデータは無視
@@ -28,12 +29,5 @@ export default class AudioFrequencyHelper {
       }) // 時系列プロット（時刻 [ms], 変位）
     })
     return tmp
-  }
-
-  public static normalizationY(
-    buffer: Float32Array,
-    height: number = 1,
-  ): Float32Array {
-    return buffer.map((_item) => (1 - _item / 255) * height)
   }
 }

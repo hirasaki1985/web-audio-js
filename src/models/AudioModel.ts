@@ -1,5 +1,5 @@
 export interface AudioLoadCallbacks {
-  success: () => void
+  success: (buffer: AudioBuffer) => void
   error: () => void
 }
 
@@ -20,18 +20,32 @@ export default class AudioModel {
   /**
    * play
    */
-  public play = async (name: string) => {
+  public play = async (
+    name: string,
+    callbacks: { onEnd: () => void },
+    when: number = 0,
+    offset: number = 0,
+  ) => {
+    // const oscillator = this.audioContext.createOscillator()
+
     const sound = this.getSound(name)
-    if (sound) {
+    if (sound && sound.buffer) {
       const source = this.audioContext.createBufferSource()
       source.buffer = sound.buffer
       source.connect(this.audioContext.destination)
-      source.start(0)
+      source.onended = () => callbacks.onEnd()
+      source.start(when, offset, sound.buffer.duration)
     }
   }
 
+  /**
+   * getApiSounds
+   */
   public getApiSounds = (): ApiSound[] => this.apiSounds
 
+  /**
+   * getBuffer
+   */
   public getBuffer = (name: string): AudioBuffer => {
     const sound = this.getSound(name)
     if (sound && sound.buffer) {
@@ -62,6 +76,18 @@ export default class AudioModel {
 
     return analyser
   }
+
+  public getMaxDuration = (): number =>
+    this.getApiSounds().reduce((a, b) => {
+      if (
+        a.buffer == null ||
+        a.buffer.duration == null ||
+        b.buffer == null ||
+        b.buffer.duration == null
+      )
+        return a
+      return a.buffer.duration > b.buffer.duration ? a : b
+    }).buffer?.duration || 0
 
   /**
    * get sound
@@ -95,7 +121,7 @@ export default class AudioModel {
             buffer,
           })
 
-          if (callbacks) callbacks.success()
+          if (callbacks) callbacks.success(buffer)
         },
 
         /**

@@ -26,8 +26,7 @@ module.exports = {
     ecmaFeatures: {
       jsx: true,
     },
-    project: 'tsconfig.json',
-    ecmaVersion: 2019,
+    ecmaVersion: 12,
     sourceType: 'module',
   },
   plugins: [
@@ -37,6 +36,7 @@ module.exports = {
     'eslint-plugin-jsdoc',
     'eslint-plugin-react',
     '@typescript-eslint',
+
   ],
   settings: {
     react: {
@@ -80,8 +80,6 @@ module.exports = {
     'jsx-a11y/anchor-is-valid': 'off',
     'jsx-a11y/interactive-supports-focus': 'off',
     'react/jsx-boolean-value': 0,
-    'react-hooks/rules-of-hooks': 'error', // Checks rules of Hooks
-    'react-hooks/exhaustive-deps': 'warn', // Checks effect dependencies
     'react/prop-types': 0,
     'react/jsx-curly-newline': 'off',
     '@typescript-eslint/indent': [

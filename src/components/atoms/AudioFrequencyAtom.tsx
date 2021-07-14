@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react'
-import { LineChart, Line, ResponsiveContainer } from 'recharts'
+import { LineChart, Line } from 'recharts'
+import { ObjectPosition } from '../../@types/AudioType'
 
 export interface AudioFrequencyAtomProps {
   plotData: frequencyData[]
   width?: number
   height?: number
+  onMouseMove: (position: ObjectPosition) => void
+  onMouseClick: (position: ObjectPosition) => void
 }
 
 /**
@@ -18,20 +21,38 @@ export interface frequencyData {
 const AudioFrequencyAtom: React.FC<AudioFrequencyAtomProps> = (
   props: AudioFrequencyAtomProps,
 ) => {
-  const { plotData, width, height } = props
+  const { plotData, width, height, onMouseMove, onMouseClick } = props
+
+  const viewPlotData = useMemo(() => plotData, [plotData, width])
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart width={300} height={100} data={plotData}>
-        <Line
-          type="monotone"
-          dataKey="frequency"
-          stroke="#8884d8"
-          strokeWidth={1}
-          dot={false}
-        />
-      </LineChart>
-    </ResponsiveContainer>
+    <LineChart
+      width={width}
+      height={height}
+      data={viewPlotData}
+      onMouseMove={(e: any) => {
+        if (e == null || e.chartX == null || e.chartY == null) return
+        onMouseMove({
+          x: Number(e.chartX),
+          y: Number(e.chartY),
+        })
+      }}
+      onClick={(e: any) => {
+        if (e == null || e.chartX == null || e.chartY == null) return
+        onMouseClick({
+          x: Number(e.chartX),
+          y: Number(e.chartY),
+        })
+      }}
+    >
+      <Line
+        type="monotone"
+        dataKey="frequency"
+        stroke="#8884d8"
+        strokeWidth={1}
+        dot={false}
+      />
+    </LineChart>
   )
 }
 

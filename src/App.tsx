@@ -1,37 +1,133 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import './App.css'
-import AudioModel, { ApiSound } from './models/AudioModel'
-import AudioFrequencyAtom from './components/atoms/AudioFrequencyAtom'
-import AudioFrequencyHelper from './helpers/AudioFrequencyHelper'
+import AudioModel from './models/AudioModel'
+import AudioListOrganism from './components/organisms/AudioListOrganism'
+import {
+  AudioBufferList,
+  AudioCurrentState,
+  AudioListItemParam,
+  AudioListViewParam,
+  ObjectPosition,
+} from './@types/AudioType'
 
+const nameWidth = 100
+
+/**
+ * view consts
+ */
+const magnification = 1 // 周波数表示の倍率
+const frequencyItemWidth = 500 * magnification // 周波数表示部分のwidth
+const secondPixel = 300 // 一秒間のピクセル
+const frequencyHeight = 50 // 周波数表示の高さ
+
+/**
+ * audio
+ */
+const audioModel = new AudioModel()
+
+/**
+ * App
+ */
 function App() {
-  const audioName = 'piano.wav'
-  const [audioModel, setAudioModel] = useState(new AudioModel())
-  const [wavFilePath, setWavFilePath] = useState('/audios/piano.wav')
-  const [audioBufferList, setAudioBufferList] = useState<ApiSound[]>()
+  /**
+   * current
+   */
+  const [audioBufferList, setAudioBufferList] = useState<AudioBufferList[]>()
+  const [audioListItemParam, setAudioListItemParam] =
+    useState<AudioListItemParam>({
+      nameWidth,
+      maxFrequencyWidth: 0,
+    })
+  const [audioListViewParam, setAudioListViewParam] =
+    useState<AudioListViewParam>({
+      frequencyHeight,
+      frequencyItemWidth,
+      secondPixel,
+      magnification,
+    })
+  const [audioCurrentState, setAudioCurrentState] = useState<AudioCurrentState>(
+    {
+      outputPosition: {
+        x: 0,
+        y: 0,
+      },
+    },
+  )
 
+  // input
+  const audioName = 'piano.wav'
+  const [wavFilePath, setWavFilePath] = useState('/audios/piano.wav')
+  const [timeOffset, setTimeOffset] = useState(0)
+
+  /**
+   * getFrequencyWidth
+   */
+  const getFrequencyWidth = (_duration: number): number =>
+    _duration * secondPixel * magnification
+
+  /**
+   * initialize
+   */
   useEffect(() => {
     audioModel
       .loadAudio(wavFilePath, audioName, {
-        success: () => {
-          console.log('success')
-          setAudioBufferList(audioModel.getApiSounds().concat())
+        success: (_buffer) => {
+          console.log('success', _buffer)
+          // update audio buffer list
+          setAudioBufferList(
+            audioModel.getApiSounds().map((_item) => ({
+              apiSound: _item,
+              width: _item.buffer?.duration
+                ? getFrequencyWidth(_item.buffer.duration)
+                : 0,
+            })),
+          )
+
+          // audio list item param
+          setAudioListItemParam({
+            maxFrequencyWidth: getFrequencyWidth(audioModel.getMaxDuration()),
+            nameWidth,
+          })
         },
         error: () => {},
       })
       .then()
   }, [])
 
-  const onClickButton = async () => {
-    // await audioModel.play('sample')
-    // const buffer = audioModel.getBuffer(audioName)
+  /**
+   * on click start button
+   */
+  const onClickStartButton = async () => {
+    await audioModel.play(
+      audioName,
+      {
+        onEnd: () => {
+          console.log('on end')
+        },
+      },
+      0,
+      timeOffset,
+    )
   }
+
+  /**
+   * frequency: on mouse click
+   */
+  const frequencyOnMouseClick = async (_position: ObjectPosition) => {
+    setAudioCurrentState({
+      outputPosition: _position,
+    })
+  }
+
+  console.log({
+    audioListItemParam,
+  })
 
   return (
     <div className="App">
-      <header className="App-header">
-        <button type="button" onClick={onClickButton}>
+      <StyleHeader className="App-header">
+        <button type="button" onClick={onClickStartButton}>
           再生
         </button>
         <input
@@ -42,56 +138,27 @@ function App() {
             setWavFilePath(e.target.value)
           }}
         />
-      </header>
-      <StyledMain>
-        <ul className="audio-list">
-          {audioBufferList &&
-            audioBufferList.map((_audio) => (
-              <li key={_audio.name} className="audio-list-item">
-                <span className="audio-list-name">{_audio.name}</span>
-                <span className="audio-frequency">
-                  <AudioFrequencyAtom
-                    plotData={AudioFrequencyHelper.convertPlotData(
-                      _audio.buffer,
-                    )}
-                  />
-                </span>
-              </li>
-            ))}
-        </ul>
-      </StyledMain>
+        <input
+          type="number"
+          name="current_time_index"
+          value={timeOffset}
+          min={0}
+          onChange={(e) => {
+            setTimeOffset(Number(e.target.value))
+          }}
+        />
+      </StyleHeader>
+      <AudioListOrganism
+        audioList={audioBufferList || []}
+        audioListItemParam={audioListItemParam}
+        audioViewParam={audioListViewParam}
+        currentState={audioCurrentState}
+        frequencyOnMouseClick={frequencyOnMouseClick}
+      />
     </div>
   )
 }
 
 export default App
 
-const StyledMain = styled.div`
-  height: 500px;
-
-  > .audio-list {
-    min-width: 100px;
-    height: 100%;
-
-    > .audio-list-item {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      justify-content: flex-start;
-      align-items: center;
-      align-content: flex-start;
-
-      min-height: 50px;
-      > .audio-list-name {
-        font-weight: bold;
-        min-width: 100px;
-      }
-
-      > .audio-frequency {
-        min-height: 50px;
-        min-width: 800px;
-        height: 50px;
-      }
-    }
-  }
-`
+const StyleHeader = styled.div``
