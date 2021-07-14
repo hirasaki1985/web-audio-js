@@ -10,6 +10,7 @@ import {
   AudioListViewParam,
   ObjectPosition,
 } from './@types/AudioType'
+import AudioFrequencyHelper from './helpers/AudioFrequencyHelper'
 
 const nameWidth = 100
 
@@ -48,6 +49,7 @@ function App() {
     })
   const [audioCurrentState, setAudioCurrentState] = useState<AudioCurrentState>(
     {
+      timePosition: 0,
       outputPosition: {
         x: 0,
         y: 0,
@@ -58,7 +60,6 @@ function App() {
   // input
   const audioName = 'piano.wav'
   const [wavFilePath, setWavFilePath] = useState('/audios/piano.wav')
-  const [timeOffset, setTimeOffset] = useState(0)
 
   /**
    * getFrequencyWidth
@@ -107,7 +108,7 @@ function App() {
         },
       },
       0,
-      timeOffset,
+      audioCurrentState.timePosition,
     )
   }
 
@@ -115,7 +116,13 @@ function App() {
    * frequency: on mouse click
    */
   const frequencyOnMouseClick = async (_position: ObjectPosition) => {
+    console.log('App frequencyOnMouseClick', _position)
     setAudioCurrentState({
+      timePosition: AudioFrequencyHelper.convertTime(
+        _position.x,
+        audioListViewParam.magnification,
+        audioListViewParam.secondPixel,
+      ),
       outputPosition: _position,
     })
   }
@@ -141,11 +148,8 @@ function App() {
         <input
           type="number"
           name="current_time_index"
-          value={timeOffset}
+          value={audioCurrentState.timePosition}
           min={0}
-          onChange={(e) => {
-            setTimeOffset(Number(e.target.value))
-          }}
         />
       </StyleHeader>
       <AudioListOrganism

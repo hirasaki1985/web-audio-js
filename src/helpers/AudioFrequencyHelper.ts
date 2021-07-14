@@ -1,6 +1,14 @@
 import { frequencyData } from '../components/atoms/AudioFrequencyAtom'
 
 export default class AudioFrequencyHelper {
+  public static convertTime(
+    x: number,
+    magnification: number,
+    secondPixel: number,
+  ): number {
+    return x / (magnification * secondPixel)
+  }
+
   /**
    * audioBufferをグラフで表示する形式に変更する
    */

@@ -25,5 +25,8 @@ export interface ObjectPosition {
 }
 
 export interface AudioCurrentState {
+  // 再生開始位置
+  timePosition: number
+  // 現在選択している位置(縦線の位置)
   outputPosition: ObjectPosition
 }
