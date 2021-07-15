@@ -99,8 +99,6 @@ interface StyleMainProps {
 }
 
 const StyledMain = styled.div<StyleMainProps>`
-  height: 500px;
-
   > .audio-list {
     min-width: 100px;
     height: 100%;

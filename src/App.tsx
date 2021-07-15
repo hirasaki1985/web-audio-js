@@ -11,6 +11,7 @@ import {
   ObjectPosition,
 } from './@types/AudioType'
 import AudioFrequencyHelper from './helpers/AudioFrequencyHelper'
+import DragAreaOrganism from './components/organisms/DragAreaOrganism'
 
 const nameWidth = 100
 
@@ -58,8 +59,7 @@ function App() {
   )
 
   // input
-  const audioName = 'piano.wav'
-  const [wavFilePath, setWavFilePath] = useState('/audios/piano.wav')
+  const [playFileName, setPlayFileName] = useState('piano.wav')
 
   /**
    * getFrequencyWidth
@@ -67,12 +67,12 @@ function App() {
   const getFrequencyWidth = (_duration: number): number =>
     _duration * secondPixel * magnification
 
-  /**
-   * initialize
-   */
-  useEffect(() => {
+  const loadAudioFile = (
+    _loadAudioFileResource: string | ArrayBuffer,
+    _loadAudioFileName: string,
+  ) => {
     audioModel
-      .loadAudio(wavFilePath, audioName, {
+      .loadAudio(_loadAudioFileResource, _loadAudioFileName, {
         success: (_buffer) => {
           console.log('success', _buffer)
           // update audio buffer list
@@ -94,6 +94,12 @@ function App() {
         error: () => {},
       })
       .then()
+  }
+  /**
+   * initialize
+   */
+  useEffect(() => {
+    loadAudioFile('/audios/piano.wav', 'piano.wav')
   }, [])
 
   /**
@@ -101,7 +107,7 @@ function App() {
    */
   const onClickStartButton = async () => {
     await audioModel.play(
-      audioName,
+      playFileName,
       {
         onEnd: () => {
           console.log('on end')
@@ -131,18 +137,29 @@ function App() {
     audioListItemParam,
   })
 
+  /**
+   * onDragFile
+   */
+  const onDragFile = async (
+    _file: File,
+    _arrayBuffer: string | ArrayBuffer,
+  ) => {
+    // await audioModel.loadAudio(_arrayBuffer, _file.name)
+    loadAudioFile(_arrayBuffer, _file.name)
+  }
+
   return (
-    <div className="App">
-      <StyleHeader className="App-header">
+    <StyleContainer className="App">
+      <div className="app-header">
         <button type="button" onClick={onClickStartButton}>
           再生
         </button>
         <input
           type="text"
           name="audio_file_path"
-          value={wavFilePath}
+          value={playFileName}
           onChange={(e) => {
-            setWavFilePath(e.target.value)
+            setPlayFileName(e.target.value)
           }}
         />
         <input
@@ -151,18 +168,38 @@ function App() {
           value={audioCurrentState.timePosition}
           min={0}
         />
-      </StyleHeader>
-      <AudioListOrganism
-        audioList={audioBufferList || []}
-        audioListItemParam={audioListItemParam}
-        audioViewParam={audioListViewParam}
-        currentState={audioCurrentState}
-        frequencyOnMouseClick={frequencyOnMouseClick}
-      />
-    </div>
+      </div>
+      <div className="audio-list-container">
+        <AudioListOrganism
+          audioList={audioBufferList || []}
+          audioListItemParam={audioListItemParam}
+          audioViewParam={audioListViewParam}
+          currentState={audioCurrentState}
+          frequencyOnMouseClick={frequencyOnMouseClick}
+        />
+      </div>
+      <div className="drag-area-container">
+        <DragAreaOrganism onDragFile={onDragFile} />
+      </div>
+    </StyleContainer>
   )
 }
 
 export default App
 
-const StyleHeader = styled.div``
+const StyleContainer = styled.div`
+  max-width: 800px;
+  height: 100%;
+
+  .app-header {
+  }
+  .audio-list-container {
+    padding-bottom: 1em;
+  }
+
+  .drag-area-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+`

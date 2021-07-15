@@ -1,11 +1,8 @@
+import { ApiSound } from '../@types/AudioType'
+
 export interface AudioLoadCallbacks {
   success: (buffer: AudioBuffer) => void
   error: () => void
-}
-
-export interface ApiSound {
-  name: string
-  buffer: AudioBuffer | null
 }
 
 export default class AudioModel {
@@ -99,29 +96,34 @@ export default class AudioModel {
    * loadAudio
    */
   public loadAudio = async (
-    url: string,
-    name: string,
+    resource: string | ArrayBuffer,
+    audioName: string,
     callbacks: AudioLoadCallbacks | undefined = undefined,
   ) => {
-    const request = new XMLHttpRequest()
-    request.open('GET', url, true)
-    request.responseType = 'arraybuffer'
+    // validate
+    if (resource == null) return
 
-    request.onload = async () => {
+    /**
+     * _decodeAudioData
+     */
+    const _decodeAudioData = async (
+      _decodeName: string,
+      _decodeBuffer: ArrayBuffer,
+    ) => {
       await this.audioContext.decodeAudioData(
-        request.response,
+        _decodeBuffer,
 
         /**
          * success
          */
-        (buffer) => {
+        (_decodeResultBuffer) => {
           // add to api sounds
           this.apiSounds.push({
-            name,
-            buffer,
+            name: _decodeName,
+            buffer: _decodeResultBuffer,
           })
 
-          if (callbacks) callbacks.success(buffer)
+          if (callbacks) callbacks.success(_decodeResultBuffer)
         },
 
         /**
@@ -134,6 +136,22 @@ export default class AudioModel {
       )
     }
 
-    request.send()
+    // string
+    if (typeof resource === 'string') {
+      const request = new XMLHttpRequest()
+      request.open('GET', resource, true)
+      request.responseType = 'arraybuffer'
+
+      request.onload = async () => {
+        const responseBuffer = request.response
+        await _decodeAudioData(audioName, responseBuffer)
+      }
+
+      request.send()
+      // array buffer
+    } else {
+      console.log('loadAudio() array buffer')
+      await _decodeAudioData(audioName, resource)
+    }
   }
 }

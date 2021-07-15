@@ -34,14 +34,14 @@ const AudioFrequencyMemoryAtom: React.FC<AudioFrequencyMemoryProps> = (
 
     const result: RulerMemory[] = [...Array(middleMemoryNum + 1)].map(
       (_, i) => ({
-        name: `${i}`,
+        name: `${i}s`,
         value: i * oneMemoryWidth,
       }),
     )
     const maxWidthNum = MathUtil.mathRound(maxFrequencyWidth, 2)
 
     result.push({
-      name: `${MathUtil.mathRound(maxWidthNum / oneMemoryWidth, 2)}`,
+      name: `${MathUtil.mathRound(maxWidthNum / oneMemoryWidth, 2)}s`,
       value: maxWidthNum,
     })
 

@@ -1,4 +1,7 @@
-import { ApiSound } from '../models/AudioModel'
+export interface ApiSound {
+  name: string
+  buffer: AudioBuffer | null
+}
 
 export interface AudioListViewParam {
   frequencyHeight: number
