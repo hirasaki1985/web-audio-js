@@ -1,4 +1,5 @@
 import { ApiSound } from '../@types/AudioType'
+import ArrayUtil from '../Utils/ArrayUtil'
 
 export interface AudioLoadCallbacks {
   success: (buffer: AudioBuffer) => void
@@ -27,18 +28,86 @@ export default class AudioModel {
 
     const sound = this.getSound(name)
     if (sound && sound.buffer) {
-      const source = this.audioContext.createBufferSource()
-      source.buffer = sound.buffer
-      source.connect(this.audioContext.destination)
-      source.onended = () => callbacks.onEnd()
-      source.start(when, offset, sound.buffer.duration)
+      this.playAudioBuffer(sound.buffer, callbacks, when, offset)
     }
+  }
+
+  /**
+   * playWithActiveSounds
+   */
+  public playWithActiveSounds = async (
+    callbacks: { onEnd: () => void },
+    when: number = 0,
+    offset: number = 0,
+  ) => {
+    const audioBuffer = this.getMergedAudioBuffer()
+    this.playAudioBuffer(audioBuffer, callbacks, when, offset)
+  }
+
+  /**
+   * playAudioBuffer
+   */
+  private playAudioBuffer = (
+    audioBuffer: AudioBuffer,
+    callbacks: { onEnd: () => void },
+    when: number = 0,
+    offset: number = 0,
+  ) => {
+    const source = this.audioContext.createBufferSource()
+    source.buffer = audioBuffer
+    source.connect(this.audioContext.destination)
+    source.onended = () => callbacks.onEnd()
+    source.start(when, offset, audioBuffer.duration)
+  }
+
+  /**
+   * getMergedAudioBuffer
+   */
+  public getMergedAudioBuffer = (): AudioBuffer => {
+    const audioBuffers = this.getArrayBuffers()
+    let maxChannels = 0
+    let maxDuration = 0
+    for (let i = 0; i < audioBuffers.length; i += 1) {
+      if (audioBuffers[i].numberOfChannels > maxChannels) {
+        maxChannels = audioBuffers[i].numberOfChannels
+      }
+      if (audioBuffers[i].duration > maxDuration) {
+        maxDuration = audioBuffers[i].duration
+      }
+    }
+    const out = this.audioContext.createBuffer(
+      maxChannels,
+      this.audioContext.sampleRate * maxDuration,
+      this.audioContext.sampleRate,
+    )
+
+    for (let j = 0; j < audioBuffers.length; j += 1) {
+      for (
+        let srcChannel = 0;
+        srcChannel < audioBuffers[j].numberOfChannels;
+        srcChannel += 1
+      ) {
+        const outt = out.getChannelData(srcChannel)
+        const inn = audioBuffers[j].getChannelData(srcChannel)
+        for (let i = 0; i < inn.length; i += 1) {
+          outt[i] += inn[i]
+        }
+        out.getChannelData(srcChannel).set(outt, 0)
+      }
+    }
+    return out
   }
 
   /**
    * getApiSounds
    */
   public getApiSounds = (): ApiSound[] => this.apiSounds
+
+  /**
+   * getArrayBuffers
+   */
+  public getArrayBuffers = (): AudioBuffer[] =>
+    this.apiSounds.map((_item) => _item.buffer).filter(ArrayUtil.nonNullable)
 
   /**
    * getBuffer

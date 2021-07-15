@@ -106,8 +106,9 @@ function App() {
    * on click start button
    */
   const onClickStartButton = async () => {
-    await audioModel.play(
-      playFileName,
+    // await audioModel.play(
+    await audioModel.playWithActiveSounds(
+      // playFileName,
       {
         onEnd: () => {
           console.log('on end')
