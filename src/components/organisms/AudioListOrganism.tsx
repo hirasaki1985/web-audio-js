@@ -50,6 +50,7 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
       nameWidth={audioListItemParam.nameWidth}
       frequencyWidth={audioListItemParam.maxFrequencyWidth}
       frequencyHeight={audioViewParam.frequencyHeight}
+      frequencyLeftMargin={audioViewParam.frequencyLeftMargin}
       mouseX={mousePosition.x}
       mouseY={mousePosition.y}
       currentAudioPositionX={currentState.outputPosition.x}
@@ -76,6 +77,7 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
             </li>
           ))}
         <AudioFrequencyMemoryAtom
+          audioViewParam={audioViewParam}
           nameWidth={audioListItemParam.nameWidth}
           maxFrequencyWidth={audioListItemParam.maxFrequencyWidth}
           secondPixel={audioViewParam.secondPixel}
@@ -93,6 +95,7 @@ interface StyleMainProps {
   nameWidth: number
   frequencyWidth: number
   frequencyHeight: number
+  frequencyLeftMargin: string
   mouseX: number
   mouseY: number
   currentAudioPositionX: number
@@ -116,11 +119,15 @@ const StyledMain = styled.div<StyleMainProps>`
       min-height: ${(props) => props.frequencyHeight}px;
       > .audio-list-name {
         font-weight: bold;
+        height: 100%;
+        padding: 16px 0px 16px 8px;
         min-width: ${(props) => props.nameWidth}px;
+        background-color: cadetblue;
       }
 
       // audio-frequency
       > .audio-frequency {
+        margin-left: ${(props) => props.frequencyLeftMargin};
         min-height: ${(props) => props.frequencyHeight}px;
         min-width: ${(props) => props.frequencyWidth}px;
         height: ${(props) => props.frequencyHeight}px;

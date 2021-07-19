@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 import MathUtil from '../../Utils/MathUtil'
+import { AudioListViewParam } from '../../@types/AudioType'
 
 /**
  * types
  */
 export interface AudioFrequencyMemoryProps {
+  audioViewParam: AudioListViewParam
   nameWidth: number
   maxFrequencyWidth: number
   magnification: number
@@ -20,7 +22,13 @@ interface RulerMemory {
 const AudioFrequencyMemoryAtom: React.FC<AudioFrequencyMemoryProps> = (
   props: AudioFrequencyMemoryProps,
 ) => {
-  const { nameWidth, maxFrequencyWidth, magnification, secondPixel } = props
+  const {
+    audioViewParam,
+    nameWidth,
+    maxFrequencyWidth,
+    magnification,
+    secondPixel,
+  } = props
 
   /**
    * メモリーを作成
@@ -49,7 +57,11 @@ const AudioFrequencyMemoryAtom: React.FC<AudioFrequencyMemoryProps> = (
   }, [maxFrequencyWidth, magnification, secondPixel])
 
   return (
-    <StyleContainer nameWidth={nameWidth} frequencyWidth={maxFrequencyWidth}>
+    <StyleContainer
+      nameWidth={nameWidth}
+      frequencyWidth={maxFrequencyWidth}
+      frequencyLeftMargin={audioViewParam.frequencyLeftMargin}
+    >
       <div className="audio-list-name" />
       <div className="audio-ruler">
         {memories.map((_memory) => (
@@ -72,6 +84,7 @@ const AudioFrequencyMemoryAtom: React.FC<AudioFrequencyMemoryProps> = (
 interface StyleContainerProps {
   nameWidth: number
   frequencyWidth: number
+  frequencyLeftMargin: string
 }
 
 const StyleContainer = styled.li<StyleContainerProps>`
@@ -87,6 +100,7 @@ const StyleContainer = styled.li<StyleContainerProps>`
   }
 
   > .audio-ruler {
+    margin-left: ${(props) => props.frequencyLeftMargin};
     width: ${(props) => props.frequencyWidth}px;
     min-width: ${(props) => props.frequencyWidth}px;
     border-top: black 1px solid;

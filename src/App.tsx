@@ -6,20 +6,23 @@ import AudioListOrganism from './components/organisms/AudioListOrganism'
 import {
   AudioBufferList,
   AudioCurrentState,
+  AudioEffector,
   AudioListItemParam,
   AudioListViewParam,
+  AudioViewEffectorBaseRefProps,
   ObjectPosition,
 } from './@types/AudioType'
 import AudioFrequencyHelper from './helpers/AudioFrequencyHelper'
 import DragAreaOrganism from './components/organisms/DragAreaOrganism'
-
-const nameWidth = 100
+import EffectorListOrganism from './components/organisms/EffectorListOrganism'
 
 /**
  * view consts
  */
 const magnification = 1 // 周波数表示の倍率
+const nameWidth = 150 // 名前表示部分のwidth
 const frequencyItemWidth = 500 * magnification // 周波数表示部分のwidth
+const frequencyLeftMargin = '1em'
 const secondPixel = 300 // 一秒間のピクセル
 const frequencyHeight = 50 // 周波数表示の高さ
 
@@ -35,19 +38,32 @@ function App() {
   /**
    * current
    */
+  // audio buffer list
   const [audioBufferList, setAudioBufferList] = useState<AudioBufferList[]>()
+
+  // effectors
+  const [effectorList, setEffectorList] = useState<
+    AudioEffector<AudioViewEffectorBaseRefProps>[]
+  >([])
+
+  // audio list item param
   const [audioListItemParam, setAudioListItemParam] =
     useState<AudioListItemParam>({
       nameWidth,
       maxFrequencyWidth: 0,
     })
+
+  // audio list view param
   const [audioListViewParam, setAudioListViewParam] =
     useState<AudioListViewParam>({
       frequencyHeight,
       frequencyItemWidth,
+      frequencyLeftMargin,
       secondPixel,
       magnification,
     })
+
+  // audio current state
   const [audioCurrentState, setAudioCurrentState] = useState<AudioCurrentState>(
     {
       timePosition: 0,
@@ -67,6 +83,9 @@ function App() {
   const getFrequencyWidth = (_duration: number): number =>
     _duration * secondPixel * magnification
 
+  /**
+   * loadAudioFile
+   */
   const loadAudioFile = (
     _loadAudioFileResource: string | ArrayBuffer,
     _loadAudioFileName: string,
@@ -95,17 +114,35 @@ function App() {
       })
       .then()
   }
+
   /**
    * initialize
    */
   useEffect(() => {
     loadAudioFile('/audios/piano.wav', 'piano.wav')
+
+    // set effector list
+    const _effectors = [
+      audioModel.effectorFactory.getSimpleDelayEffector(
+        'simple delay effector 1',
+      ),
+      audioModel.effectorFactory.getSimpleDelayEffector(
+        'simple delay effector 2',
+      ),
+    ]
+    setEffectorList(_effectors)
   }, [])
 
   /**
    * on click start button
    */
   const onClickStartButton = async () => {
+    effectorList.forEach((_effector) => {
+      _effector.getViewParameter()
+    })
+
+    // start to play audio
+    /*
     // await audioModel.play(
     await audioModel.playWithActiveSounds(
       // playFileName,
@@ -117,6 +154,8 @@ function App() {
       0,
       audioCurrentState.timePosition,
     )
+
+    */
   }
 
   /**
@@ -151,6 +190,7 @@ function App() {
 
   return (
     <StyleContainer className="App">
+      {/* header */}
       <div className="app-header">
         <button type="button" onClick={onClickStartButton}>
           再生
@@ -170,17 +210,31 @@ function App() {
           min={0}
         />
       </div>
-      <div className="audio-list-container">
-        <AudioListOrganism
-          audioList={audioBufferList || []}
-          audioListItemParam={audioListItemParam}
-          audioViewParam={audioListViewParam}
-          currentState={audioCurrentState}
-          frequencyOnMouseClick={frequencyOnMouseClick}
-        />
+
+      {/* audio list */}
+      <div className="audio-list">
+        {/* audio list container */}
+        <div className="audio-list-container">
+          <AudioListOrganism
+            audioList={audioBufferList || []}
+            audioListItemParam={audioListItemParam}
+            audioViewParam={audioListViewParam}
+            currentState={audioCurrentState}
+            frequencyOnMouseClick={frequencyOnMouseClick}
+          />
+        </div>
+
+        {/* drag area container */}
+        <div className="drag-area-container">
+          <DragAreaOrganism onDragFile={onDragFile} />
+        </div>
       </div>
-      <div className="drag-area-container">
-        <DragAreaOrganism onDragFile={onDragFile} />
+
+      {/* effector list */}
+      <div className="effector-list">
+        <div className="effector-list-container">
+          <EffectorListOrganism effectors={effectorList} />
+        </div>
       </div>
     </StyleContainer>
   )
@@ -192,15 +246,22 @@ const StyleContainer = styled.div`
   max-width: 800px;
   height: 100%;
 
-  .app-header {
-  }
-  .audio-list-container {
-    padding-bottom: 1em;
+  > .app-header {
   }
 
-  .drag-area-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  > .audio-list {
+    > .audio-list-container {
+      padding-bottom: 1em;
+    }
+
+    > .drag-area-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  .effector-list-container {
+    padding-bottom: 1em;
   }
 `

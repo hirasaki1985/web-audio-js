@@ -1,18 +1,31 @@
-import { ApiSound } from '../@types/AudioType'
+import { ApiSound, AudioEffector } from '../@types/AudioType'
 import ArrayUtil from '../Utils/ArrayUtil'
+import EffectorFactory from '../effectors/EffectorFactory'
 
+/**
+ * interfaces
+ */
 export interface AudioLoadCallbacks {
   success: (buffer: AudioBuffer) => void
   error: () => void
 }
 
+/**
+ * AudioModel
+ */
 export default class AudioModel {
+  // audio context
   private audioContext = new AudioContext()
 
+  // api sound
   private apiSounds: ApiSound[]
+
+  // effector
+  public effectorFactory: EffectorFactory
 
   constructor() {
     this.apiSounds = []
+    this.effectorFactory = new EffectorFactory(this.audioContext)
   }
 
   /**
@@ -40,9 +53,14 @@ export default class AudioModel {
     when: number = 0,
     offset: number = 0,
   ) => {
-    const audioBuffer = this.getMergedAudioBuffer()
+    const audioBuffer = this.getMergedAudioBuffer(this.getArrayBuffers())
     this.playAudioBuffer(audioBuffer, callbacks, when, offset)
   }
+
+  /**
+   * playWithEffectors
+   */
+  public playWithEffectors = async () => {}
 
   /**
    * playAudioBuffer
@@ -53,7 +71,7 @@ export default class AudioModel {
     when: number = 0,
     offset: number = 0,
   ) => {
-    const source = this.audioContext.createBufferSource()
+    const source: AudioBufferSourceNode = this.audioContext.createBufferSource()
     source.buffer = audioBuffer
     source.connect(this.audioContext.destination)
     source.onended = () => callbacks.onEnd()
@@ -63,8 +81,7 @@ export default class AudioModel {
   /**
    * getMergedAudioBuffer
    */
-  public getMergedAudioBuffer = (): AudioBuffer => {
-    const audioBuffers = this.getArrayBuffers()
+  public getMergedAudioBuffer = (audioBuffers: AudioBuffer[]): AudioBuffer => {
     let maxChannels = 0
     let maxDuration = 0
     for (let i = 0; i < audioBuffers.length; i += 1) {
@@ -143,6 +160,9 @@ export default class AudioModel {
     return analyser
   }
 
+  /**
+   * getMaxDuration
+   */
   public getMaxDuration = (): number =>
     this.getApiSounds().reduce((a, b) => {
       if (
