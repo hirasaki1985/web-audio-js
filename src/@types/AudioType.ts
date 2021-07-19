@@ -1,8 +1,6 @@
 /**
  * sound
  */
-import React from 'react'
-
 export interface ApiSound {
   name: string
   buffer: AudioBuffer | null
@@ -28,6 +26,14 @@ export interface AudioViewEffectorBaseRefProps {}
 /**
  * mixer
  */
+export interface AudioMixer {}
+
+export interface AudioMixerChain {}
+
+/**
+ *
+ */
+export interface AudioMasterParams {}
 
 /**
  * state

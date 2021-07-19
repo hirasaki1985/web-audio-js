@@ -31,6 +31,8 @@ const EffectorListOrganism: React.FC<EffectorListOrganismProps> = (
   )
 }
 
+const itemBottomMargin = '1em'
+
 const StyleContainer = styled.div`
   .effector-list-organism-list {
     > .effector-list-organism-list-item {
@@ -39,6 +41,7 @@ const StyleContainer = styled.div`
       align-items: center;
       justify-content: flex-start;
       min-height: 40px;
+      margin-bottom: ${itemBottomMargin};
 
       .effector-name {
         padding: 16px;

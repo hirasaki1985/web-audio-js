@@ -17,13 +17,18 @@ import DragAreaOrganism from './components/organisms/DragAreaOrganism'
 import EffectorListOrganism from './components/organisms/EffectorListOrganism'
 
 /**
+ *
+ */
+const firstLoadWav = 'fanfare.wav'
+
+/**
  * view consts
  */
 const magnification = 1 // 周波数表示の倍率
 const nameWidth = 150 // 名前表示部分のwidth
 const frequencyItemWidth = 500 * magnification // 周波数表示部分のwidth
 const frequencyLeftMargin = '1em'
-const secondPixel = 300 // 一秒間のピクセル
+const secondPixel = 80 // 一秒間のピクセル
 const frequencyHeight = 50 // 周波数表示の高さ
 
 /**
@@ -75,7 +80,7 @@ function App() {
   )
 
   // input
-  const [playFileName, setPlayFileName] = useState('piano.wav')
+  const [playFileName, setPlayFileName] = useState(firstLoadWav)
 
   /**
    * getFrequencyWidth
@@ -119,7 +124,7 @@ function App() {
    * initialize
    */
   useEffect(() => {
-    loadAudioFile('/audios/piano.wav', 'piano.wav')
+    loadAudioFile(`/audios/${firstLoadWav}`, firstLoadWav)
 
     // set effector list
     const _effectors = [
@@ -137,12 +142,17 @@ function App() {
    * on click start button
    */
   const onClickStartButton = async () => {
-    effectorList.forEach((_effector) => {
-      _effector.getViewParameter()
-    })
-
-    // start to play audio
+    await audioModel.playWithEffectors(
+      firstLoadWav,
+      effectorList[0].getAudioNode(),
+      {
+        onEnd: () => {
+          console.log('on end')
+        },
+      },
+    )
     /*
+    // start to play audio
     // await audioModel.play(
     await audioModel.playWithActiveSounds(
       // playFileName,
@@ -154,7 +164,6 @@ function App() {
       0,
       audioCurrentState.timePosition,
     )
-
     */
   }
 
@@ -243,13 +252,16 @@ function App() {
 export default App
 
 const StyleContainer = styled.div`
-  max-width: 800px;
   height: 100%;
 
   > .app-header {
   }
 
   > .audio-list {
+    width: 100%;
+    background-color: #ecf3f8;
+    padding: 1em;
+
     > .audio-list-container {
       padding-bottom: 1em;
     }

@@ -60,7 +60,62 @@ export default class AudioModel {
   /**
    * playWithEffectors
    */
-  public playWithEffectors = async () => {}
+  public playWithEffectors = async (
+    name: string,
+    effector: AudioNode,
+    callbacks: { onEnd: () => void },
+    when: number = 0,
+    offset: number = 0,
+  ) => {
+    const sound = this.getSound(name)
+
+    if (sound && sound.buffer) {
+      console.log('playWithEffectors name = ', name)
+      console.log({
+        effector,
+        sound,
+      })
+
+      const oscillator = this.audioContext.createOscillator()
+
+      // get buffer
+      const buffer = this.getMergedAudioBuffer([sound.buffer])
+
+      // delay
+      // const delay = this.audioContext.createDelay(5)
+      // delay.delayTime.value = 2
+
+      // reverb
+      const convolver = this.audioContext.createConvolver()
+      convolver.buffer = buffer
+
+      // create buffer source
+      // const source: AudioBufferSourceNode =
+      //   this.audioContext.createBufferSource()
+      // source.buffer = buffer
+
+      // source.connect(this.audioContext.destination)
+      // delay.connect(this.audioContext.destination)
+      // convolver.connect(this.audioContext.destination)
+
+      oscillator.connect(this.audioContext.destination)
+
+      // oscillator.connect(convolver)
+      // convolver.connect(this.audioContext.destination)
+
+      /*
+      // source.connect(delay)
+      source.onended = () => callbacks.onEnd()
+      source.start(when, offset, buffer.duration)
+      */
+      //
+      // oscillator.connect(this.audioContext.destination)
+      // oscillator.connect(delay)
+      // oscillator.connect(effector)
+
+      oscillator.start(when)
+    }
+  }
 
   /**
    * playAudioBuffer

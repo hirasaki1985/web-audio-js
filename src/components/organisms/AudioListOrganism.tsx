@@ -101,6 +101,8 @@ interface StyleMainProps {
   currentAudioPositionX: number
 }
 
+const itemBottomMargin = '1em'
+
 const StyledMain = styled.div<StyleMainProps>`
   > .audio-list {
     min-width: 100px;
@@ -115,14 +117,16 @@ const StyledMain = styled.div<StyleMainProps>`
       justify-content: flex-start;
       align-items: center;
       align-content: flex-start;
+      margin-bottom: ${itemBottomMargin};
 
       min-height: ${(props) => props.frequencyHeight}px;
+
       > .audio-list-name {
         font-weight: bold;
         height: 100%;
         padding: 16px 0px 16px 8px;
         min-width: ${(props) => props.nameWidth}px;
-        background-color: cadetblue;
+        background-color: #bbc3ea;
       }
 
       // audio-frequency
@@ -140,7 +144,9 @@ const StyledMain = styled.div<StyleMainProps>`
           width: 1px;
           top: 0px;
           left: ${(props) => props.mouseX}px;
-          height: ${(props) => props.frequencyHeight}px;
+          height: calc(
+            ${(props) => props.frequencyHeight}px + ${itemBottomMargin}
+          );
         }
 
         &:hover::before {
@@ -153,9 +159,11 @@ const StyledMain = styled.div<StyleMainProps>`
           content: '';
           position: absolute;
           width: 1px;
+          height: calc(
+            ${(props) => props.frequencyHeight}px + ${itemBottomMargin}
+          );
           top: 0px;
           left: ${(props) => props.currentAudioPositionX}px;
-          height: ${(props) => props.frequencyHeight}px;
           border-left: 2px blue solid;
         }
       }
