@@ -76,38 +76,59 @@ export default class AudioModel {
         sound,
       })
 
+      const master = this.audioContext.createGain()
+      master.gain.value = 0.8
+      master.connect(this.audioContext.destination)
+
+      // oscillator
       const oscillator = this.audioContext.createOscillator()
+      oscillator.connect(master)
 
       // get buffer
       const buffer = this.getMergedAudioBuffer([sound.buffer])
 
       // delay
-      // const delay = this.audioContext.createDelay(5)
-      // delay.delayTime.value = 2
+      const delay = this.audioContext.createDelay(5)
+      delay.delayTime.value = 2
 
       // reverb
-      const convolver = this.audioContext.createConvolver()
-      convolver.buffer = buffer
+      // const convolver = this.audioContext.createConvolver()
+      // convolver.buffer = buffer
 
       // create buffer source
-      // const source: AudioBufferSourceNode =
-      //   this.audioContext.createBufferSource()
-      // source.buffer = buffer
+      const source: AudioBufferSourceNode =
+        this.audioContext.createBufferSource()
+      source.buffer = buffer
+      source.connect(master)
+
+      // Connect nodes for original sound
+      // OscillatorNode (Input) -> AudioDestinationNode (Output)
+      // source.connect(oscillator).connect(this.audioContext.destination)
+
+      // Connect nodes for effect (Delay) sound
+      // OscillatorNode (Input) -> DelayNode (Delay) -> AudioDestinationNode (Output)
+      // oscillator.connect(delay)
+      delay.connect(master)
+
+      // connect
+      // source
+      // .connect(delay)
+      // .connect(convolver)
+      // .connect(this.audioContext.destination)
 
       // source.connect(this.audioContext.destination)
       // delay.connect(this.audioContext.destination)
       // convolver.connect(this.audioContext.destination)
 
-      oscillator.connect(this.audioContext.destination)
+      // oscillator.connect(this.audioContext.destination)
 
       // oscillator.connect(convolver)
       // convolver.connect(this.audioContext.destination)
 
-      /*
       // source.connect(delay)
-      source.onended = () => callbacks.onEnd()
-      source.start(when, offset, buffer.duration)
-      */
+      // source.onended = () => callbacks.onEnd()
+      // source.start(when, offset, buffer.duration)
+
       //
       // oscillator.connect(this.audioContext.destination)
       // oscillator.connect(delay)
