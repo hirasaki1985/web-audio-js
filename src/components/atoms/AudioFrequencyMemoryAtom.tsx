@@ -9,6 +9,7 @@ import { TrackListViewParam } from '../../@types/AudioType'
 export interface AudioFrequencyMemoryProps {
   audioViewParam: TrackListViewParam
   nameWidth: number
+  namePadding: string
   maxFrequencyWidth: number
   magnification: number
   secondPixel: number
@@ -25,6 +26,7 @@ const AudioFrequencyMemoryAtom: React.FC<AudioFrequencyMemoryProps> = (
   const {
     audioViewParam,
     nameWidth,
+    namePadding,
     maxFrequencyWidth,
     magnification,
     secondPixel,
@@ -59,6 +61,7 @@ const AudioFrequencyMemoryAtom: React.FC<AudioFrequencyMemoryProps> = (
   return (
     <StyleContainer
       nameWidth={nameWidth}
+      namePadding={namePadding}
       frequencyWidth={maxFrequencyWidth}
       frequencyLeftMargin={audioViewParam.frequencyLeftMargin}
     >
@@ -83,6 +86,7 @@ const AudioFrequencyMemoryAtom: React.FC<AudioFrequencyMemoryProps> = (
 
 interface StyleContainerProps {
   nameWidth: number
+  namePadding: string
   frequencyWidth: number
   frequencyLeftMargin: string
 }
@@ -96,6 +100,8 @@ const StyleContainer = styled.li<StyleContainerProps>`
 
   > .audio-list-name {
     width: ${(props) => props.nameWidth}px;
+    padding-left: ${(props) => props.namePadding};
+    padding-right: ${(props) => props.namePadding};
     min-width: ${(props) => props.nameWidth}px;
   }
 

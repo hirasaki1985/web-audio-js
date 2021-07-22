@@ -1,18 +1,18 @@
 import React, { createRef } from 'react'
 import { AudioEffector } from '../../@types/AudioType'
-import SimpleDelayEffectorView, {
-  SimpleDelayEffectorViewProps,
-  SimpleDelayEffectorViewRefProps,
-} from './SimpleDelayEffectorView'
+import MasterEffectorView, {
+  MasterEffectorViewProps,
+  MasterEffectorViewRefProps,
+} from './MasterEffectorView'
 
-export default class SimpleDelayEffector
-  implements AudioEffector<SimpleDelayEffectorViewProps>
+export default class MasterEffector
+  implements AudioEffector<MasterEffectorViewProps>
 {
   private audioContext: AudioContext
 
-  private viewEffectorRef = createRef<SimpleDelayEffectorViewRefProps>()
+  private viewEffectorRef = createRef<MasterEffectorViewRefProps>()
 
-  private defaultViewProps: SimpleDelayEffectorViewProps = {
+  private defaultViewProps: MasterEffectorViewProps = {
     delayTime: 0,
     maxDelayTime: 10,
     feedbackGainValue: 0.5,
@@ -38,8 +38,8 @@ export default class SimpleDelayEffector
   /**
    * getViewParameter
    */
-  public getViewParameter(): SimpleDelayEffectorViewProps {
-    console.log('SimpleDelayEffector getParameter()')
+  public getViewParameter(): MasterEffectorViewProps {
+    console.log('MasterEffector getParameter()')
     console.log(this.viewEffectorRef.current?.getCurrentData())
     if (this.viewEffectorRef.current?.getCurrentData) {
       return this.viewEffectorRef.current?.getCurrentData()
@@ -83,7 +83,7 @@ export default class SimpleDelayEffector
    */
   public viewEffector() {
     return (
-      <SimpleDelayEffectorView
+      <MasterEffectorView
         {...this.defaultViewProps}
         ref={this.viewEffectorRef}
       />

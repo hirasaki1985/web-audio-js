@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import './App.css'
-import AudioController from './models/AudioModel'
+import AudioController from './cores/AudioController'
 import AudioListOrganism from './components/organisms/AudioListOrganism'
 import {
   TrackListItem,
@@ -20,16 +20,18 @@ import EffectorListOrganism from './components/organisms/EffectorListOrganism'
  * tmp
  */
 const firstLoadWav = 'fanfare.wav'
+const firstLoadWavViewName = 'ファンファーレ'
 
 /**
  * view const
  */
 const magnification = 1 // 周波数表示の倍率
-const nameWidth = 150 // 名前表示部分のwidth
+const nameWidth = 170 // 名前表示部分のwidth
+const nameContainerPadding = '8px'
 const frequencyItemWidth = 500 * magnification // 周波数表示部分のwidth
 const frequencyLeftMargin = '1em'
 const secondPixel = 80 // 一秒間のピクセル
-const frequencyHeight = 50 // 周波数表示の高さ
+const frequencyHeight = 90 // 周波数表示の高さ
 
 /**
  * audio controller
@@ -64,6 +66,7 @@ function App() {
   const [trackListItemViewParam, setTrackListItemViewParam] =
     useState<TrackListItemViewParam>({
       nameWidth,
+      namePadding: nameContainerPadding,
       maxFrequencyWidth: 0,
     })
 
@@ -93,35 +96,42 @@ function App() {
   const loadAudioFile = (
     _loadAudioFileResource: string | ArrayBuffer,
     _loadAudioFileName: string,
+    _loadAudioViewName: string,
   ) => {
     audioController
-      .loadAudio(_loadAudioFileResource, _loadAudioFileName, {
-        success: (_buffer) => {
-          console.log('success', _buffer)
-          // update audio buffer list
-          setTrackList(
-            audioController.getApiSounds().map((_item) => ({
-              track: _item,
-              state: {
-                width: _item.buffer?.duration
-                  ? getFrequencyWidth(_item.buffer.duration)
-                  : 0,
-                mute: false,
-                volume: 50,
-              },
-            })),
-          )
+      .loadAudio(
+        _loadAudioFileResource,
+        _loadAudioFileName,
+        _loadAudioViewName,
+        {
+          success: (_buffer) => {
+            // update audio buffer list
+            setTrackList(
+              audioController.getApiSounds().map((_item) => ({
+                track: _item,
+                state: {
+                  width: _item.buffer?.duration
+                    ? getFrequencyWidth(_item.buffer.duration)
+                    : 0,
+                  mute: false,
+                  isPlay: false,
+                  volume: 5,
+                },
+              })),
+            )
 
-          // audio list item param
-          setTrackListItemViewParam({
-            maxFrequencyWidth: getFrequencyWidth(
-              audioController.getMaxDuration(),
-            ),
-            nameWidth,
-          })
+            // audio list item param
+            setTrackListItemViewParam({
+              maxFrequencyWidth: getFrequencyWidth(
+                audioController.getMaxDuration(),
+              ),
+              nameWidth,
+              namePadding: nameContainerPadding,
+            })
+          },
+          error: () => {},
         },
-        error: () => {},
-      })
+      )
       .then()
   }
 
@@ -129,16 +139,19 @@ function App() {
    * initialize
    */
   useEffect(() => {
-    loadAudioFile(`/audios/${firstLoadWav}`, firstLoadWav)
+    loadAudioFile(`/audios/${firstLoadWav}`, firstLoadWav, firstLoadWavViewName)
 
     // set effector list
     const _effectors = [
       audioController.effectorFactory.getSimpleDelayEffector(
         'simple delay effector 1',
+        'ディレイエフェクター',
       ),
       audioController.effectorFactory.getSimpleReverbEffector(
         'simple reverb effector 1',
+        'リバーブエフェクター',
       ),
+      audioController.effectorFactory.getMasterEffector(),
     ]
     setEffectorList(_effectors)
   }, [])
@@ -156,20 +169,6 @@ function App() {
         },
       },
     )
-    /*
-    // start to play audio
-    // await audioModel.play(
-    await audioModel.playWithActiveSounds(
-      // playFileName,
-      {
-        onEnd: () => {
-          console.log('on end')
-        },
-      },
-      0,
-      audioCurrentState.timePosition,
-    )
-    */
   }
 
   /**
@@ -195,14 +194,11 @@ function App() {
     _arrayBuffer: string | ArrayBuffer,
   ) => {
     // await audioModel.loadAudio(_arrayBuffer, _file.name)
-    loadAudioFile(_arrayBuffer, _file.name)
+    loadAudioFile(_arrayBuffer, _file.name, _file.name)
   }
 
   /**
    * トラックの状態が変更された時
-   *
-   * @param _track
-   * @param _index
    */
   const onChangeTrackItemState = (_track: TrackListItem, _index: number) => {
     console.log('App onChangeTrackItemState')
@@ -214,6 +210,31 @@ function App() {
     const _trackList = trackList.concat()
     _trackList[_index].state = _track.state
     setTrackList(_trackList)
+  }
+
+  /**
+   * 再生が押された時
+   */
+  const onClickPlay = async (_track: TrackListItem, _index: number) => {
+    const _trackList = trackList.concat()
+    _track.state.isPlay = true
+    _trackList[_index].state = _track.state
+    setTrackList(_trackList)
+
+    await audioController.play(
+      _track.track.name,
+      {
+        onEnd: () => {
+          console.log('App onClickPlay onEnd()')
+          const _tl = trackList.concat()
+          _track.state.isPlay = false
+          _tl[_index].state = _track.state
+          setTrackList(_tl)
+        },
+      },
+      0,
+      audioCurrentState.timePosition,
+    )
   }
 
   return (
@@ -250,6 +271,7 @@ function App() {
             currentState={audioCurrentState}
             frequencyOnMouseClick={frequencyOnMouseClick}
             onChangeTrackItemState={onChangeTrackItemState}
+            onClickPlay={onClickPlay}
           />
         </div>
 

@@ -3,13 +3,15 @@
  */
 export interface Track {
   name: string
+  viewName: string
   buffer: AudioBuffer | null
 }
 
 export interface TrackState {
-  width: number
-  mute: boolean
-  volume: number
+  width: number // 波形の長sだ
+  mute: boolean // ミュート中かどうか
+  isPlay: boolean // 再生中かどうか
+  volume: number // 音量
 }
 
 export interface TrackListItem {
@@ -22,6 +24,7 @@ export interface TrackListItem {
  */
 export interface AudioEffector<VP> {
   name: string
+  viewName: string
   getAudioNode(): AudioNode
   connect(node: AudioNode): AudioNode
   viewEffector(): JSX.Element
@@ -33,9 +36,12 @@ export interface AudioViewEffectorBaseRefProps {}
 /**
  * mixer
  */
-export interface AudioMixer {}
+export interface AudioMixer {
+  chains: AudioMixerChain[]
+}
 
 export interface AudioMixerChain {
+  track: TrackListItem
   effectors: AudioEffector<AudioViewEffectorBaseRefProps>[]
 }
 
@@ -67,6 +73,7 @@ export interface TrackListViewParam {
 
 export interface TrackListItemViewParam {
   nameWidth: number
+  namePadding: string
   maxFrequencyWidth: number
 }
 

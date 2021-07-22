@@ -20,9 +20,16 @@ export default class SimpleReverbEffector
   // public
   public name: string = ''
 
-  public constructor(audioContext: AudioContext, name: string) {
+  public viewName: string = ''
+
+  public constructor(
+    audioContext: AudioContext,
+    name: string,
+    viewName: string = '',
+  ) {
     this.name = name
     this.audioContext = audioContext
+    this.viewName = viewName == null || viewName === '' ? this.name : viewName
   }
 
   /**

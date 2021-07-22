@@ -22,7 +22,7 @@ const EffectorListOrganism: React.FC<EffectorListOrganismProps> = (
       <ul className="effector-list-organism-list">
         {effectors.map((_effector) => (
           <li key={_effector.name} className="effector-list-organism-list-item">
-            <div className="effector-name">{_effector.name}</div>
+            <div className="effector-name">{_effector.viewName}</div>
             <div>{_effector.viewEffector()}</div>
           </li>
         ))}

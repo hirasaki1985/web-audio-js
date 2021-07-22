@@ -3,8 +3,12 @@ import AudioFrequencyHelper from '../../helpers/AudioFrequencyHelper'
 import AudioFrequencyMemoryAtom from '../atoms/AudioFrequencyMemoryAtom'
 import React, { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faVolumeMute } from '@fortawesome/free-solid-svg-icons/faVolumeMute'
-import { faVolumeUp } from '@fortawesome/free-solid-svg-icons'
+import {
+  faVolumeUp,
+  faVolumeMute,
+  faPlay,
+  faPause,
+} from '@fortawesome/free-solid-svg-icons'
 import styled from 'styled-components'
 import {
   TrackListItem,
@@ -24,6 +28,7 @@ export interface AudioListOrganismProps {
   currentState: AudioCurrentState
   frequencyOnMouseClick: (position: ObjectPosition) => void
   onChangeTrackItemState: (_track: TrackListItem, _index: number) => void
+  onClickPlay: (_track: TrackListItem, _index: number) => void
 }
 
 const AudioListOrganism: React.FC<AudioListOrganismProps> = (
@@ -37,6 +42,7 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
     currentState,
     frequencyOnMouseClick,
     onChangeTrackItemState,
+    onClickPlay,
   } = props
 
   // state
@@ -66,17 +72,21 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
           trackList.map((_audio, _index) => (
             <li key={_audio.track.name} className="audio-list-item">
               <span className="audio-left-container">
-                <div className="audio-list-name">{_audio.track.name}</div>
+                {/* name */}
+                <div className="audio-list-name">{_audio.track.viewName}</div>
+
+                {/* state */}
                 <div className="audio-list-state">
+                  {/* mute */}
                   <div
                     className={`audio-list-state-icon ${
                       _audio.state.mute
-                        ? 'audio-list-state-icon-active'
-                        : 'audio-list-state-icon-inactive'
+                        ? 'audio-list-state-icon-mute-active'
+                        : 'audio-list-state-icon-mute-inactive'
                     }`}
                   >
                     <FontAwesomeIcon
-                      icon={_audio.state.mute ? faVolumeMute : faVolumeUp}
+                      icon={faVolumeMute}
                       style={iconStyle}
                       onClick={() => {
                         _audio.state.mute = !_audio.state.mute
@@ -84,6 +94,39 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
                       }}
                     />
                   </div>
+
+                  {/* play */}
+                  <div
+                    className={`audio-list-state-icon ${
+                      _audio.state.isPlay
+                        ? 'audio-list-state-icon-play-active'
+                        : 'audio-list-state-icon-play-inactive'
+                    }`}
+                  >
+                    <FontAwesomeIcon
+                      icon={_audio.state.isPlay ? faPause : faPlay}
+                      style={iconStyle}
+                      onClick={() => {
+                        !_audio.state.isPlay && onClickPlay(_audio, _index)
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* volume */}
+                <div className="audio-list-volume">
+                  <FontAwesomeIcon icon={faVolumeUp} style={iconStyle} />
+                  <input
+                    type="range"
+                    id="points"
+                    name="points"
+                    min="0"
+                    max="10"
+                    defaultValue={_audio.state.volume}
+                    onChange={(event) => {
+                      _audio.state.volume = Number(event.target.value)
+                    }}
+                  />
                 </div>
               </span>
               <span className="audio-frequency">
@@ -105,6 +148,7 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
         <AudioFrequencyMemoryAtom
           audioViewParam={trackListViewParam}
           nameWidth={trackListItemViewParam.nameWidth}
+          namePadding={trackListItemViewParam.namePadding}
           maxFrequencyWidth={trackListItemViewParam.maxFrequencyWidth}
           secondPixel={trackListViewParam.secondPixel}
           magnification={trackListViewParam.magnification}
@@ -127,7 +171,8 @@ interface StyleMainProps {
   currentAudioPositionX: number
 }
 
-const itemBottomMargin = '1em'
+const itemTopMargin = '0.5em'
+const itemBottomMargin = '0.5em'
 
 const StyledMain = styled.div<StyleMainProps>`
   > .audio-list {
@@ -145,12 +190,16 @@ const StyledMain = styled.div<StyleMainProps>`
       align-content: flex-start;
       margin-bottom: ${itemBottomMargin};
 
+      &:not(:first-child) {
+        margin-top: ${itemTopMargin};
+      }
+
       min-height: ${(props) => props.frequencyHeight}px;
       max-height: ${(props) => props.frequencyHeight}px;
 
       > .audio-left-container {
         min-width: ${(props) => props.nameWidth}px;
-        padding: 8px 0px 8px 8px;
+        padding: 8px;
         background-color: #bbc3ea;
         height: 100%;
         display: flex;
@@ -165,23 +214,45 @@ const StyledMain = styled.div<StyleMainProps>`
 
         > .audio-list-state {
           width: 100%;
-          height: 20px;
+          height: 30px;
           padding-top: 4px;
+          display: flex;
 
           > .audio-list-state-icon {
-            width: min-content;
             cursor: pointer;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-content: center;
+            justify-content: center;
+            align-items: center;
+            border-radius: 4px;
+
+            &:not(:last-child) {
+              margin-right: 4px;
+            }
           }
 
-          > .audio-list-state-icon-active {
+          // mute
+          > .audio-list-state-icon-mute-active {
             background-color: rgba(80, 80, 79, 0.33);
-            border-radius: 4px;
           }
 
-          > .audio-list-state-icon-inactive {
+          > .audio-list-state-icon-mute-inactive {
             background-color: yellow;
-            border-radius: 4px;
           }
+
+          // play
+          > .audio-list-state-icon-play-active {
+            background-color: #6fb9ec;
+          }
+
+          > .audio-list-state-icon-play-inactive {
+            background-color: rgba(80, 80, 79, 0.33);
+          }
+        }
+
+        > .audio-list-volume {
         }
       }
 

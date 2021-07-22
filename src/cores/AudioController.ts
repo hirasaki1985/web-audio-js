@@ -1,4 +1,4 @@
-import { Track, AudioEffector } from '../@types/AudioType'
+import { Track } from '../@types/AudioType'
 import ArrayUtil from '../Utils/ArrayUtil'
 import EffectorFactory from '../effectors/EffectorFactory'
 
@@ -11,9 +11,9 @@ export interface AudioLoadCallbacks {
 }
 
 /**
- * AudioModel
+ * AudioController
  */
-export default class AudioModel {
+export default class AudioController {
   // audio context
   private audioContext = new AudioContext()
 
@@ -56,6 +56,11 @@ export default class AudioModel {
     const audioBuffer = this.getMergedAudioBuffer(this.getArrayBuffers())
     this.playAudioBuffer(audioBuffer, callbacks, when, offset)
   }
+
+  /**
+   * playWithMixer
+   */
+  public playWithMixer = async () => {}
 
   /**
    * playWithEffectors
@@ -291,6 +296,7 @@ export default class AudioModel {
   public loadAudio = async (
     resource: string | ArrayBuffer,
     audioName: string,
+    viewName: string,
     callbacks: AudioLoadCallbacks | undefined = undefined,
   ) => {
     // validate
@@ -301,6 +307,7 @@ export default class AudioModel {
      */
     const _decodeAudioData = async (
       _decodeName: string,
+      _decodeViewName: string,
       _decodeBuffer: ArrayBuffer,
     ) => {
       await this.audioContext.decodeAudioData(
@@ -313,6 +320,7 @@ export default class AudioModel {
           // add to api sounds
           this.apiSounds.push({
             name: _decodeName,
+            viewName: _decodeViewName,
             buffer: _decodeResultBuffer,
           })
 
@@ -337,14 +345,14 @@ export default class AudioModel {
 
       request.onload = async () => {
         const responseBuffer = request.response
-        await _decodeAudioData(audioName, responseBuffer)
+        await _decodeAudioData(audioName, viewName, responseBuffer)
       }
 
       request.send()
       // array buffer
     } else {
       console.log('loadAudio() array buffer')
-      await _decodeAudioData(audioName, resource)
+      await _decodeAudioData(audioName, viewName, resource)
     }
   }
 }
