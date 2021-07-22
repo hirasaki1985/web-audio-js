@@ -16,6 +16,9 @@ export interface SimpleDelayEffectorViewRefProps
   getCurrentData: () => SimpleDelayEffectorViewProps
 }
 
+/**
+ * SimpleDelayEffectorView
+ */
 const SimpleDelayEffectorView: React.FC<SimpleDelayEffectorViewProps> =
   React.forwardRef<
     SimpleDelayEffectorViewRefProps,
@@ -58,6 +61,9 @@ const SimpleDelayEffectorView: React.FC<SimpleDelayEffectorViewProps> =
     )
   })
 
+/**
+ * Style
+ */
 const StyleContainer = styled.div`
   display: flex;
 `

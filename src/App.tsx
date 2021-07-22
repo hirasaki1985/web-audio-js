@@ -131,8 +131,8 @@ function App() {
       audioModel.effectorFactory.getSimpleDelayEffector(
         'simple delay effector 1',
       ),
-      audioModel.effectorFactory.getSimpleDelayEffector(
-        'simple delay effector 2',
+      audioModel.effectorFactory.getSimpleReverbEffector(
+        'simple reverb effector 1',
       ),
     ]
     setEffectorList(_effectors)

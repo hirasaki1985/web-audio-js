@@ -77,15 +77,16 @@ export default class AudioModel {
       })
 
       // const
+      const masterGainValue = 0.8
       const delayTimeValue = 2
+      const delayMaxDelayTime = 5
       const feedbackGainValue = 0.5
       const dryGainValue = 0.7 // 原音
       const wetGainValue = 0.3 // エフェクトオン
 
       // master
       const master = this.audioContext.createGain()
-      master.gain.value = 0.8
-      master.connect(this.audioContext.destination)
+      master.gain.value = masterGainValue
 
       // oscillator
       // const oscillator = this.audioContext.createOscillator()
@@ -95,7 +96,7 @@ export default class AudioModel {
       const buffer = this.getMergedAudioBuffer([sound.buffer])
 
       // delay
-      const delay = this.audioContext.createDelay(5)
+      const delay = this.audioContext.createDelay(delayMaxDelayTime)
       delay.delayTime.value = delayTimeValue
 
       const dry = this.audioContext.createGain()
@@ -126,11 +127,18 @@ export default class AudioModel {
       // delay.connect(master)
 
       // feedback connect
-      source.connect(delay)
-      source.connect(dry)
-      delay.connect(wet).connect(master)
+
+      // base sound -> dry -> master
+      source.connect(dry).connect(master)
+
+      // base sound -> delay -> wet -> master
+      source.connect(delay).connect(wet).connect(master)
+
+      // delay -> feedback -> delay
       delay.connect(feedback).connect(delay)
-      delay.connect(master)
+
+      // master
+      master.connect(this.audioContext.destination)
 
       // connect
       // source
