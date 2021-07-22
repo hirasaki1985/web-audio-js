@@ -76,20 +76,35 @@ export default class AudioModel {
         sound,
       })
 
+      // const
+      const delayTimeValue = 2
+      const feedbackGainValue = 0.5
+      const dryGainValue = 0.7 // 原音
+      const wetGainValue = 0.3 // エフェクトオン
+
+      // master
       const master = this.audioContext.createGain()
       master.gain.value = 0.8
       master.connect(this.audioContext.destination)
 
       // oscillator
-      const oscillator = this.audioContext.createOscillator()
-      oscillator.connect(master)
+      // const oscillator = this.audioContext.createOscillator()
+      // oscillator.connect(master)
 
       // get buffer
       const buffer = this.getMergedAudioBuffer([sound.buffer])
 
       // delay
       const delay = this.audioContext.createDelay(5)
-      delay.delayTime.value = 2
+      delay.delayTime.value = delayTimeValue
+
+      const dry = this.audioContext.createGain()
+      const wet = this.audioContext.createGain()
+      const feedback = this.audioContext.createGain()
+
+      dry.gain.value = dryGainValue
+      wet.gain.value = wetGainValue
+      feedback.gain.value = feedbackGainValue
 
       // reverb
       // const convolver = this.audioContext.createConvolver()
@@ -99,7 +114,7 @@ export default class AudioModel {
       const source: AudioBufferSourceNode =
         this.audioContext.createBufferSource()
       source.buffer = buffer
-      source.connect(master)
+      // source.connect(master)
 
       // Connect nodes for original sound
       // OscillatorNode (Input) -> AudioDestinationNode (Output)
@@ -108,6 +123,13 @@ export default class AudioModel {
       // Connect nodes for effect (Delay) sound
       // OscillatorNode (Input) -> DelayNode (Delay) -> AudioDestinationNode (Output)
       // oscillator.connect(delay)
+      // delay.connect(master)
+
+      // feedback connect
+      source.connect(delay)
+      source.connect(dry)
+      delay.connect(wet).connect(master)
+      delay.connect(feedback).connect(delay)
       delay.connect(master)
 
       // connect
@@ -125,16 +147,14 @@ export default class AudioModel {
       // oscillator.connect(convolver)
       // convolver.connect(this.audioContext.destination)
 
-      // source.connect(delay)
-      // source.onended = () => callbacks.onEnd()
-      // source.start(when, offset, buffer.duration)
-
-      //
       // oscillator.connect(this.audioContext.destination)
       // oscillator.connect(delay)
       // oscillator.connect(effector)
 
-      oscillator.start(when)
+      // play
+      source.onended = () => callbacks.onEnd()
+      source.start(when, offset, buffer.duration)
+      // oscillator.start(when)
     }
   }
 
