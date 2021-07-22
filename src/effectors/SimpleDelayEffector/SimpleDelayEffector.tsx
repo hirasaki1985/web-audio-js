@@ -15,6 +15,9 @@ export default class SimpleDelayEffector
   private defaultViewProps: SimpleDelayEffectorViewProps = {
     delayTime: 0,
     maxDelayTime: 10,
+    feedbackGainValue: 0.5,
+    // dryGainValue: 0.7, // 原音
+    wetGainValue: 0.3, // エフェクトオン
   }
 
   // public
@@ -36,6 +39,26 @@ export default class SimpleDelayEffector
     }
 
     return this.defaultViewProps
+  }
+
+  /**
+   * connect
+   */
+  public connect(node: AudioNode): AudioNode {
+    const currentParams = this.getViewParameter()
+    const delay = this.getAudioNode()
+
+    // const dry = this.audioContext.createGain()
+    const wet = this.audioContext.createGain()
+    const feedback = this.audioContext.createGain()
+
+    // dry.gain.value = currentParams.dryGainValue
+    wet.gain.value = currentParams.wetGainValue
+    feedback.gain.value = currentParams.feedbackGainValue
+
+    delay.connect(feedback).connect(delay)
+
+    return node.connect(delay).connect(wet)
   }
 
   /**

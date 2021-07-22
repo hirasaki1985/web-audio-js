@@ -2,12 +2,15 @@ import AudioFrequencyAtom from '../atoms/AudioFrequencyAtom'
 import AudioFrequencyHelper from '../../helpers/AudioFrequencyHelper'
 import AudioFrequencyMemoryAtom from '../atoms/AudioFrequencyMemoryAtom'
 import React, { useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faVolumeMute } from '@fortawesome/free-solid-svg-icons/faVolumeMute'
+import { faVolumeUp } from '@fortawesome/free-solid-svg-icons'
 import styled from 'styled-components'
 import {
-  AudioBufferList,
+  TrackListItem,
   AudioCurrentState,
-  AudioListItemParam,
-  AudioListViewParam,
+  TrackListItemViewParam,
+  TrackListViewParam,
   ObjectPosition,
 } from '../../@types/AudioType'
 
@@ -15,11 +18,12 @@ import {
  * types
  */
 export interface AudioListOrganismProps {
-  audioList: AudioBufferList[]
-  audioListItemParam: AudioListItemParam
-  audioViewParam: AudioListViewParam
+  trackList: TrackListItem[]
+  trackListItemViewParam: TrackListItemViewParam
+  trackListViewParam: TrackListViewParam
   currentState: AudioCurrentState
   frequencyOnMouseClick: (position: ObjectPosition) => void
+  onChangeTrackItemState: (_track: TrackListItem, _index: number) => void
 }
 
 const AudioListOrganism: React.FC<AudioListOrganismProps> = (
@@ -27,11 +31,12 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
 ) => {
   // props
   const {
-    audioList,
-    audioListItemParam,
-    audioViewParam,
+    trackList,
+    trackListItemViewParam,
+    trackListViewParam,
     currentState,
     frequencyOnMouseClick,
+    onChangeTrackItemState,
   } = props
 
   // state
@@ -39,6 +44,7 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
     x: 0,
     y: 0,
   })
+  const iconStyle: React.CSSProperties = { padding: 4, fontSize: 16 }
 
   const onMouseMoveOnChart = (_position: ObjectPosition) => {
     // console.log('AudioListOrganism onMouseMoveOnChart()', _position)
@@ -47,26 +53,46 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
 
   return (
     <StyledMain
-      nameWidth={audioListItemParam.nameWidth}
-      frequencyWidth={audioListItemParam.maxFrequencyWidth}
-      frequencyHeight={audioViewParam.frequencyHeight}
-      frequencyLeftMargin={audioViewParam.frequencyLeftMargin}
+      nameWidth={trackListItemViewParam.nameWidth}
+      frequencyWidth={trackListItemViewParam.maxFrequencyWidth}
+      frequencyHeight={trackListViewParam.frequencyHeight}
+      frequencyLeftMargin={trackListViewParam.frequencyLeftMargin}
       mouseX={mousePosition.x}
       mouseY={mousePosition.y}
       currentAudioPositionX={currentState.outputPosition.x}
     >
       <ul className="audio-list">
-        {audioList &&
-          audioList.map((_audio) => (
-            <li key={_audio.apiSound.name} className="audio-list-item">
-              <span className="audio-list-name">{_audio.apiSound.name}</span>
+        {trackList &&
+          trackList.map((_audio, _index) => (
+            <li key={_audio.track.name} className="audio-list-item">
+              <span className="audio-left-container">
+                <div className="audio-list-name">{_audio.track.name}</div>
+                <div className="audio-list-state">
+                  <div
+                    className={`audio-list-state-icon ${
+                      _audio.state.mute
+                        ? 'audio-list-state-icon-active'
+                        : 'audio-list-state-icon-inactive'
+                    }`}
+                  >
+                    <FontAwesomeIcon
+                      icon={_audio.state.mute ? faVolumeMute : faVolumeUp}
+                      style={iconStyle}
+                      onClick={() => {
+                        _audio.state.mute = !_audio.state.mute
+                        onChangeTrackItemState(_audio, _index)
+                      }}
+                    />
+                  </div>
+                </div>
+              </span>
               <span className="audio-frequency">
                 <AudioFrequencyAtom
                   plotData={AudioFrequencyHelper.convertPlotData(
-                    _audio.apiSound.buffer,
+                    _audio.track.buffer,
                   )}
-                  width={_audio.width}
-                  height={audioViewParam.frequencyHeight}
+                  width={_audio.state.width}
+                  height={trackListViewParam.frequencyHeight}
                   onMouseMove={onMouseMoveOnChart}
                   onMouseClick={frequencyOnMouseClick}
                 />
@@ -77,11 +103,11 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
             </li>
           ))}
         <AudioFrequencyMemoryAtom
-          audioViewParam={audioViewParam}
-          nameWidth={audioListItemParam.nameWidth}
-          maxFrequencyWidth={audioListItemParam.maxFrequencyWidth}
-          secondPixel={audioViewParam.secondPixel}
-          magnification={audioViewParam.magnification}
+          audioViewParam={trackListViewParam}
+          nameWidth={trackListItemViewParam.nameWidth}
+          maxFrequencyWidth={trackListItemViewParam.maxFrequencyWidth}
+          secondPixel={trackListViewParam.secondPixel}
+          magnification={trackListViewParam.magnification}
         />
       </ul>
     </StyledMain>
@@ -120,13 +146,43 @@ const StyledMain = styled.div<StyleMainProps>`
       margin-bottom: ${itemBottomMargin};
 
       min-height: ${(props) => props.frequencyHeight}px;
+      max-height: ${(props) => props.frequencyHeight}px;
 
-      > .audio-list-name {
-        font-weight: bold;
-        height: 100%;
-        padding: 16px 0px 16px 8px;
+      > .audio-left-container {
         min-width: ${(props) => props.nameWidth}px;
+        padding: 8px 0px 8px 8px;
         background-color: #bbc3ea;
+        height: 100%;
+        display: flex;
+        align-content: flex-start;
+        justify-content: flex-start;
+        flex-direction: column;
+
+        > .audio-list-name {
+          width: 100%;
+          font-weight: bold;
+        }
+
+        > .audio-list-state {
+          width: 100%;
+          height: 20px;
+          padding-top: 4px;
+
+          > .audio-list-state-icon {
+            width: min-content;
+            cursor: pointer;
+          }
+
+          > .audio-list-state-icon-active {
+            background-color: rgba(80, 80, 79, 0.33);
+            border-radius: 4px;
+          }
+
+          > .audio-list-state-icon-inactive {
+            background-color: yellow;
+            border-radius: 4px;
+          }
+        }
       }
 
       // audio-frequency

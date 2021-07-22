@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 import MathUtil from '../../Utils/MathUtil'
-import { AudioListViewParam } from '../../@types/AudioType'
+import { TrackListViewParam } from '../../@types/AudioType'
 
 /**
  * types
  */
 export interface AudioFrequencyMemoryProps {
-  audioViewParam: AudioListViewParam
+  audioViewParam: TrackListViewParam
   nameWidth: number
   maxFrequencyWidth: number
   magnification: number

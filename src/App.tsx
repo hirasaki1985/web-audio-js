@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import './App.css'
-import AudioModel from './models/AudioModel'
+import AudioController from './models/AudioModel'
 import AudioListOrganism from './components/organisms/AudioListOrganism'
 import {
-  AudioBufferList,
+  TrackListItem,
   AudioCurrentState,
   AudioEffector,
-  AudioListItemParam,
-  AudioListViewParam,
+  TrackListItemViewParam,
+  TrackListViewParam,
   AudioViewEffectorBaseRefProps,
   ObjectPosition,
 } from './@types/AudioType'
@@ -17,12 +17,12 @@ import DragAreaOrganism from './components/organisms/DragAreaOrganism'
 import EffectorListOrganism from './components/organisms/EffectorListOrganism'
 
 /**
- *
+ * tmp
  */
 const firstLoadWav = 'fanfare.wav'
 
 /**
- * view consts
+ * view const
  */
 const magnification = 1 // 周波数表示の倍率
 const nameWidth = 150 // 名前表示部分のwidth
@@ -32,9 +32,9 @@ const secondPixel = 80 // 一秒間のピクセル
 const frequencyHeight = 50 // 周波数表示の高さ
 
 /**
- * audio
+ * audio controller
  */
-const audioModel = new AudioModel()
+const audioController = new AudioController()
 
 /**
  * App
@@ -43,29 +43,28 @@ function App() {
   /**
    * current
    */
-  // audio buffer list
-  const [audioBufferList, setAudioBufferList] = useState<AudioBufferList[]>()
+  // rack list
+  const [trackList, setTrackList] = useState<TrackListItem[]>([])
 
   // effectors
   const [effectorList, setEffectorList] = useState<
     AudioEffector<AudioViewEffectorBaseRefProps>[]
   >([])
 
-  // audio list item param
-  const [audioListItemParam, setAudioListItemParam] =
-    useState<AudioListItemParam>({
-      nameWidth,
-      maxFrequencyWidth: 0,
-    })
-
-  // audio list view param
-  const [audioListViewParam, setAudioListViewParam] =
-    useState<AudioListViewParam>({
+  // track view param
+  const [trackListViewParam, setTrackListViewParam] =
+    useState<TrackListViewParam>({
       frequencyHeight,
       frequencyItemWidth,
       frequencyLeftMargin,
       secondPixel,
       magnification,
+    })
+
+  const [trackListItemViewParam, setTrackListItemViewParam] =
+    useState<TrackListItemViewParam>({
+      nameWidth,
+      maxFrequencyWidth: 0,
     })
 
   // audio current state
@@ -95,23 +94,29 @@ function App() {
     _loadAudioFileResource: string | ArrayBuffer,
     _loadAudioFileName: string,
   ) => {
-    audioModel
+    audioController
       .loadAudio(_loadAudioFileResource, _loadAudioFileName, {
         success: (_buffer) => {
           console.log('success', _buffer)
           // update audio buffer list
-          setAudioBufferList(
-            audioModel.getApiSounds().map((_item) => ({
-              apiSound: _item,
-              width: _item.buffer?.duration
-                ? getFrequencyWidth(_item.buffer.duration)
-                : 0,
+          setTrackList(
+            audioController.getApiSounds().map((_item) => ({
+              track: _item,
+              state: {
+                width: _item.buffer?.duration
+                  ? getFrequencyWidth(_item.buffer.duration)
+                  : 0,
+                mute: false,
+                volume: 50,
+              },
             })),
           )
 
           // audio list item param
-          setAudioListItemParam({
-            maxFrequencyWidth: getFrequencyWidth(audioModel.getMaxDuration()),
+          setTrackListItemViewParam({
+            maxFrequencyWidth: getFrequencyWidth(
+              audioController.getMaxDuration(),
+            ),
             nameWidth,
           })
         },
@@ -128,10 +133,10 @@ function App() {
 
     // set effector list
     const _effectors = [
-      audioModel.effectorFactory.getSimpleDelayEffector(
+      audioController.effectorFactory.getSimpleDelayEffector(
         'simple delay effector 1',
       ),
-      audioModel.effectorFactory.getSimpleReverbEffector(
+      audioController.effectorFactory.getSimpleReverbEffector(
         'simple reverb effector 1',
       ),
     ]
@@ -142,7 +147,7 @@ function App() {
    * on click start button
    */
   const onClickStartButton = async () => {
-    await audioModel.playWithEffectors(
+    await audioController.playWithEffectors(
       firstLoadWav,
       effectorList[0].getAudioNode(),
       {
@@ -175,16 +180,12 @@ function App() {
     setAudioCurrentState({
       timePosition: AudioFrequencyHelper.convertTime(
         _position.x,
-        audioListViewParam.magnification,
-        audioListViewParam.secondPixel,
+        trackListViewParam.magnification,
+        trackListViewParam.secondPixel,
       ),
       outputPosition: _position,
     })
   }
-
-  console.log({
-    audioListItemParam,
-  })
 
   /**
    * onDragFile
@@ -195,6 +196,24 @@ function App() {
   ) => {
     // await audioModel.loadAudio(_arrayBuffer, _file.name)
     loadAudioFile(_arrayBuffer, _file.name)
+  }
+
+  /**
+   * トラックの状態が変更された時
+   *
+   * @param _track
+   * @param _index
+   */
+  const onChangeTrackItemState = (_track: TrackListItem, _index: number) => {
+    console.log('App onChangeTrackItemState')
+    console.log({
+      _track,
+      _index,
+    })
+
+    const _trackList = trackList.concat()
+    _trackList[_index].state = _track.state
+    setTrackList(_trackList)
   }
 
   return (
@@ -225,11 +244,12 @@ function App() {
         {/* audio list container */}
         <div className="audio-list-container">
           <AudioListOrganism
-            audioList={audioBufferList || []}
-            audioListItemParam={audioListItemParam}
-            audioViewParam={audioListViewParam}
+            trackList={trackList || []}
+            trackListItemViewParam={trackListItemViewParam}
+            trackListViewParam={trackListViewParam}
             currentState={audioCurrentState}
             frequencyOnMouseClick={frequencyOnMouseClick}
+            onChangeTrackItemState={onChangeTrackItemState}
           />
         </div>
 

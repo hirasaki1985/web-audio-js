@@ -9,6 +9,9 @@ export interface SimpleDelayEffectorViewProps {
   ref?: any
   delayTime: number
   maxDelayTime: number
+  feedbackGainValue: number
+  // dryGainValue: number // 原音音量
+  wetGainValue: number // エフェクトオン
 }
 
 export interface SimpleDelayEffectorViewRefProps
@@ -38,6 +41,8 @@ const SimpleDelayEffectorView: React.FC<SimpleDelayEffectorViewProps> =
       getCurrentData: (): SimpleDelayEffectorViewProps => ({
         delayTime: currentDelayTime,
         maxDelayTime,
+        feedbackGainValue: 0,
+        wetGainValue: 0,
       }),
     }))
 

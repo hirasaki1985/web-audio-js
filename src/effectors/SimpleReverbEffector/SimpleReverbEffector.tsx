@@ -34,6 +34,13 @@ export default class SimpleReverbEffector
   }
 
   /**
+   * connect
+   */
+  public connect(node: AudioNode): AudioNode {
+    return node
+  }
+
+  /**
    * getAudioNode
    */
   public getAudioNode(): AudioNode {

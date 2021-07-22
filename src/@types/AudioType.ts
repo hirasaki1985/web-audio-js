@@ -1,14 +1,20 @@
 /**
- * sound
+ * track
  */
-export interface ApiSound {
+export interface Track {
   name: string
   buffer: AudioBuffer | null
 }
 
-export interface AudioBufferList {
+export interface TrackState {
   width: number
-  apiSound: ApiSound
+  mute: boolean
+  volume: number
+}
+
+export interface TrackListItem {
+  track: Track
+  state: TrackState
 }
 
 /**
@@ -17,6 +23,7 @@ export interface AudioBufferList {
 export interface AudioEffector<VP> {
   name: string
   getAudioNode(): AudioNode
+  connect(node: AudioNode): AudioNode
   viewEffector(): JSX.Element
   getViewParameter(): VP
 }
@@ -28,10 +35,12 @@ export interface AudioViewEffectorBaseRefProps {}
  */
 export interface AudioMixer {}
 
-export interface AudioMixerChain {}
+export interface AudioMixerChain {
+  effectors: AudioEffector<AudioViewEffectorBaseRefProps>[]
+}
 
 /**
- *
+ * master
  */
 export interface AudioMasterParams {}
 
@@ -46,9 +55,9 @@ export interface AudioCurrentState {
 }
 
 /**
- * view: audio list
+ * view: track
  */
-export interface AudioListViewParam {
+export interface TrackListViewParam {
   frequencyHeight: number
   frequencyItemWidth: number
   frequencyLeftMargin: string
@@ -56,7 +65,7 @@ export interface AudioListViewParam {
   magnification: number
 }
 
-export interface AudioListItemParam {
+export interface TrackListItemViewParam {
   nameWidth: number
   maxFrequencyWidth: number
 }

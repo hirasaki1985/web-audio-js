@@ -1,4 +1,4 @@
-import { ApiSound, AudioEffector } from '../@types/AudioType'
+import { Track, AudioEffector } from '../@types/AudioType'
 import ArrayUtil from '../Utils/ArrayUtil'
 import EffectorFactory from '../effectors/EffectorFactory'
 
@@ -18,7 +18,7 @@ export default class AudioModel {
   private audioContext = new AudioContext()
 
   // api sound
-  private apiSounds: ApiSound[]
+  private apiSounds: Track[]
 
   // effector
   public effectorFactory: EffectorFactory
@@ -222,7 +222,7 @@ export default class AudioModel {
   /**
    * getApiSounds
    */
-  public getApiSounds = (): ApiSound[] => this.apiSounds
+  public getApiSounds = (): Track[] => this.apiSounds
 
   /**
    * getArrayBuffers
@@ -282,7 +282,7 @@ export default class AudioModel {
   /**
    * get sound
    */
-  public getSound = (name: string): ApiSound | undefined =>
+  public getSound = (name: string): Track | undefined =>
     this.apiSounds.find((_item) => _item.name === name)
 
   /**
