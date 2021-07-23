@@ -12,18 +12,14 @@ import {
   AudioViewEffectorBaseRefProps,
   ObjectPosition,
   Track,
+  AudioMixer,
 } from './@types/AudioType'
 import AudioFrequencyHelper from './helpers/AudioFrequencyHelper'
 import DragAreaOrganism from './components/organisms/DragAreaOrganism'
 import EffectorListOrganism from './components/organisms/EffectorListOrganism'
 import MixerController from './cores/MixerController'
 import AppConst from './consts/AppConst'
-
-/**
- * tmp
- */
-const firstLoadWav = 'fanfare.wav'
-const firstLoadWavViewName = 'ファンファーレ'
+import MixerOrganism from './components/organisms/MixerOrganism'
 
 /**
  * controllers
@@ -38,13 +34,17 @@ function App() {
   /**
    * current
    */
-  // rack list
+  // track list
   const [trackList, setTrackList] = useState<TrackListItem[]>([])
 
   // effectors
   const [effectorList, setEffectorList] = useState<
     AudioEffector<AudioViewEffectorBaseRefProps>[]
   >([])
+
+  const [audioMixer, setAudioMixer] = useState<AudioMixer>({
+    chains: [],
+  })
 
   // track view param
   const [trackListViewParam, setTrackListViewParam] =
@@ -74,9 +74,6 @@ function App() {
     },
   )
 
-  // input
-  const [playFileName, setPlayFileName] = useState(firstLoadWav)
-
   /**
    * getFrequencyWidth
    */
@@ -90,8 +87,8 @@ function App() {
     _loadAudioFileResource: string | ArrayBuffer,
     _loadAudioFileName: string,
     _loadAudioViewName: string,
-  ): Promise<Track | undefined> => {
-    const result: Track = await new Promise((resolve, reject) => {
+  ): Promise<TrackListItem | undefined> => {
+    const result: TrackListItem = await new Promise((resolve, reject) => {
       audioController.loadAudio(
         _loadAudioFileResource,
         _loadAudioFileName,
@@ -101,6 +98,19 @@ function App() {
            * success
            */
           success: (_track: Track) => {
+            // create track list item
+            const _trackListItem = {
+              track: _track,
+              state: {
+                width: _track.buffer?.duration
+                  ? getFrequencyWidth(_track.buffer.duration)
+                  : 0,
+                mute: false,
+                isPlay: false,
+                volume: 5,
+              },
+            }
+
             // update track list
             setTrackList(
               audioController.getApiSounds().map((_item) => ({
@@ -125,7 +135,7 @@ function App() {
               namePadding: AppConst.VIEW.NAME_CONTAINER_PADDING,
             })
 
-            resolve(_track)
+            resolve(_trackListItem)
           },
           /**
            * error
@@ -144,10 +154,11 @@ function App() {
    */
   useEffect(() => {
     const initialize = async () => {
+      // set audio
       const _track1 = await loadAudioFile(
-        `/audios/${firstLoadWav}`,
-        firstLoadWav,
-        firstLoadWavViewName,
+        `/audios/fanfare.wav`,
+        'fanfare.wav',
+        'ファンファーレ',
       )
       console.log('useEffect initialize()')
       console.log({
@@ -164,6 +175,8 @@ function App() {
         _track2,
       })
 
+      if (_track1 == null || _track2 == null) return
+
       // set effector list
       const _effectors = [
         audioController.effectorFactory.getSimpleDelayEffector(
@@ -176,7 +189,15 @@ function App() {
         ),
         audioController.effectorFactory.getMasterEffector(),
       ]
+
       setEffectorList(_effectors)
+
+      // set mixer
+      mixerController.createMixer(_track1, [_effectors[0], _effectors[2]])
+      mixerController.createMixer(_track2, [_effectors[1], _effectors[2]])
+      setAudioMixer({
+        chains: mixerController.getMixerChains(),
+      })
     }
     initialize()
   }, [])
@@ -186,7 +207,7 @@ function App() {
    */
   const onClickStartButton = async () => {
     await audioController.playWithEffectors(
-      firstLoadWav,
+      '',
       effectorList[0].getAudioNode(),
       {
         onEnd: () => {
@@ -265,25 +286,7 @@ function App() {
   return (
     <StyleContainer className="App">
       {/* header */}
-      <div className="app-header">
-        <button type="button" onClick={onClickStartButton}>
-          再生
-        </button>
-        <input
-          type="text"
-          name="audio_file_path"
-          value={playFileName}
-          onChange={(e) => {
-            setPlayFileName(e.target.value)
-          }}
-        />
-        <input
-          type="number"
-          name="current_time_index"
-          value={audioCurrentState.timePosition}
-          min={0}
-        />
-      </div>
+      <div className="app-header" />
 
       {/* audio list */}
       <div className="audio-list">
@@ -311,6 +314,11 @@ function App() {
         <div className="effector-list-container">
           <EffectorListOrganism effectors={effectorList} />
         </div>
+      </div>
+
+      {/* mixer list */}
+      <div className="mixer-list">
+        <MixerOrganism mixer={audioMixer} />
       </div>
     </StyleContainer>
   )
@@ -342,5 +350,8 @@ const StyleContainer = styled.div`
 
   .effector-list-container {
     padding-bottom: 1em;
+  }
+
+  .mixer-list {
   }
 `
