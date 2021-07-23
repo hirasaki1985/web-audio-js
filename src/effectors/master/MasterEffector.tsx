@@ -13,11 +13,7 @@ export default class MasterEffector
   private viewEffectorRef = createRef<MasterEffectorViewRefProps>()
 
   private defaultViewProps: MasterEffectorViewProps = {
-    delayTime: 0,
-    maxDelayTime: 10,
-    feedbackGainValue: 0.5,
-    // dryGainValue: 0.7, // 原音
-    wetGainValue: 0.3, // エフェクトオン
+    masterVolume: 5,
   }
 
   // public
@@ -52,30 +48,19 @@ export default class MasterEffector
    * connect
    */
   public connect(node: AudioNode): AudioNode {
-    const currentParams = this.getViewParameter()
-    const delay = this.getAudioNode()
+    const master = this.getAudioNode()
 
-    // const dry = this.audioContext.createGain()
-    const wet = this.audioContext.createGain()
-    const feedback = this.audioContext.createGain()
-
-    // dry.gain.value = currentParams.dryGainValue
-    wet.gain.value = currentParams.wetGainValue
-    feedback.gain.value = currentParams.feedbackGainValue
-
-    delay.connect(feedback).connect(delay)
-
-    return node.connect(delay).connect(wet)
+    return node.connect(master)
   }
 
   /**
    * getAudioNode
    */
   public getAudioNode(): AudioNode {
-    const delay = this.audioContext.createDelay(
-      this.defaultViewProps.maxDelayTime,
-    )
-    return delay
+    const currentParams = this.getViewParameter()
+    const master = this.audioContext.createGain()
+    master.gain.value = currentParams.masterVolume
+    return master
   }
 
   /**

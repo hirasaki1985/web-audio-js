@@ -11,10 +11,13 @@ import {
   TrackListViewParam,
   AudioViewEffectorBaseRefProps,
   ObjectPosition,
+  Track,
 } from './@types/AudioType'
 import AudioFrequencyHelper from './helpers/AudioFrequencyHelper'
 import DragAreaOrganism from './components/organisms/DragAreaOrganism'
 import EffectorListOrganism from './components/organisms/EffectorListOrganism'
+import MixerController from './cores/MixerController'
+import AppConst from './consts/AppConst'
 
 /**
  * tmp
@@ -23,20 +26,10 @@ const firstLoadWav = 'fanfare.wav'
 const firstLoadWavViewName = 'ファンファーレ'
 
 /**
- * view const
- */
-const magnification = 1 // 周波数表示の倍率
-const nameWidth = 170 // 名前表示部分のwidth
-const nameContainerPadding = '8px'
-const frequencyItemWidth = 500 * magnification // 周波数表示部分のwidth
-const frequencyLeftMargin = '1em'
-const secondPixel = 80 // 一秒間のピクセル
-const frequencyHeight = 90 // 周波数表示の高さ
-
-/**
- * audio controller
+ * controllers
  */
 const audioController = new AudioController()
+const mixerController = new MixerController()
 
 /**
  * App
@@ -56,17 +49,17 @@ function App() {
   // track view param
   const [trackListViewParam, setTrackListViewParam] =
     useState<TrackListViewParam>({
-      frequencyHeight,
-      frequencyItemWidth,
-      frequencyLeftMargin,
-      secondPixel,
-      magnification,
+      frequencyHeight: AppConst.VIEW.FREQUENCY_HEIGHT,
+      frequencyItemWidth: AppConst.VIEW.FREQUENCY_ITEM_WIDTH,
+      frequencyLeftMargin: AppConst.VIEW.FREQUENCY_LEFT_MARGIN,
+      secondPixel: AppConst.VIEW.SECOND_PIXEL,
+      magnification: AppConst.VIEW.MAGNIFICATION,
     })
 
   const [trackListItemViewParam, setTrackListItemViewParam] =
     useState<TrackListItemViewParam>({
-      nameWidth,
-      namePadding: nameContainerPadding,
+      nameWidth: AppConst.VIEW.NAME_WIDTH,
+      namePadding: AppConst.VIEW.NAME_CONTAINER_PADDING,
       maxFrequencyWidth: 0,
     })
 
@@ -88,24 +81,27 @@ function App() {
    * getFrequencyWidth
    */
   const getFrequencyWidth = (_duration: number): number =>
-    _duration * secondPixel * magnification
+    _duration * AppConst.VIEW.SECOND_PIXEL * AppConst.VIEW.MAGNIFICATION
 
   /**
    * loadAudioFile
    */
-  const loadAudioFile = (
+  const loadAudioFile = async (
     _loadAudioFileResource: string | ArrayBuffer,
     _loadAudioFileName: string,
     _loadAudioViewName: string,
-  ) => {
-    audioController
-      .loadAudio(
+  ): Promise<Track | undefined> => {
+    const result: Track = await new Promise((resolve, reject) => {
+      audioController.loadAudio(
         _loadAudioFileResource,
         _loadAudioFileName,
         _loadAudioViewName,
         {
-          success: (_buffer) => {
-            // update audio buffer list
+          /**
+           * success
+           */
+          success: (_track: Track) => {
+            // update track list
             setTrackList(
               audioController.getApiSounds().map((_item) => ({
                 track: _item,
@@ -125,35 +121,64 @@ function App() {
               maxFrequencyWidth: getFrequencyWidth(
                 audioController.getMaxDuration(),
               ),
-              nameWidth,
-              namePadding: nameContainerPadding,
+              nameWidth: AppConst.VIEW.NAME_WIDTH,
+              namePadding: AppConst.VIEW.NAME_CONTAINER_PADDING,
             })
+
+            resolve(_track)
           },
-          error: () => {},
+          /**
+           * error
+           */
+          error: () => {
+            reject()
+          },
         },
       )
-      .then()
+    })
+    return result
   }
 
   /**
    * initialize
    */
   useEffect(() => {
-    loadAudioFile(`/audios/${firstLoadWav}`, firstLoadWav, firstLoadWavViewName)
+    const initialize = async () => {
+      const _track1 = await loadAudioFile(
+        `/audios/${firstLoadWav}`,
+        firstLoadWav,
+        firstLoadWavViewName,
+      )
+      console.log('useEffect initialize()')
+      console.log({
+        _track1,
+      })
 
-    // set effector list
-    const _effectors = [
-      audioController.effectorFactory.getSimpleDelayEffector(
-        'simple delay effector 1',
-        'ディレイエフェクター',
-      ),
-      audioController.effectorFactory.getSimpleReverbEffector(
-        'simple reverb effector 1',
-        'リバーブエフェクター',
-      ),
-      audioController.effectorFactory.getMasterEffector(),
-    ]
-    setEffectorList(_effectors)
+      const _track2 = await loadAudioFile(
+        `/audios/piano.wav`,
+        'piano',
+        'ピアノ',
+      )
+      console.log('useEffect initialize()')
+      console.log({
+        _track2,
+      })
+
+      // set effector list
+      const _effectors = [
+        audioController.effectorFactory.getSimpleDelayEffector(
+          'simple delay effector 1',
+          'ディレイエフェクター',
+        ),
+        audioController.effectorFactory.getSimpleReverbEffector(
+          'simple reverb effector 1',
+          'リバーブエフェクター',
+        ),
+        audioController.effectorFactory.getMasterEffector(),
+      ]
+      setEffectorList(_effectors)
+    }
+    initialize()
   }, [])
 
   /**
@@ -194,7 +219,7 @@ function App() {
     _arrayBuffer: string | ArrayBuffer,
   ) => {
     // await audioModel.loadAudio(_arrayBuffer, _file.name)
-    loadAudioFile(_arrayBuffer, _file.name, _file.name)
+    await loadAudioFile(_arrayBuffer, _file.name, _file.name)
   }
 
   /**

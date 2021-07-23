@@ -1,4 +1,4 @@
-import React, { useImperativeHandle } from 'react'
+import React, { useEffect, useImperativeHandle, useState } from 'react'
 import styled from 'styled-components'
 
 /**
@@ -6,8 +6,7 @@ import styled from 'styled-components'
  */
 export interface SimpleReverbEffectorViewProps {
   ref?: any
-  dryGainValue: number
-  wetGainValue: number
+  level: number
 }
 
 export interface SimpleReverbEffectorViewRefProps {
@@ -22,18 +21,41 @@ const SimpleReverbEffectorView: React.FC<SimpleReverbEffectorViewProps> =
     SimpleReverbEffectorViewRefProps,
     SimpleReverbEffectorViewProps
   >((props, ref) => {
-    const { dryGainValue, wetGainValue } = props
+    const { level } = props
+
+    // feedback gain
+    const [currentLevel, setCurrentLevel] = useState(level)
+    useEffect(() => {
+      setCurrentLevel(level)
+    }, [level])
 
     /**
      * ref
      */
     useImperativeHandle(ref, () => ({
       getCurrentData: (): SimpleReverbEffectorViewProps => ({
-        dryGainValue: 0,
-        wetGainValue: 0,
+        level: currentLevel,
       }),
     }))
-    return <StyleContainer />
+    return (
+      <StyleContainer>
+        <div className="delay-param-container">
+          {/* delay time */}
+          <div className="delay-param-list-item">
+            <div className="title">delay time:</div>
+            <input
+              type="range"
+              id="points"
+              name="points"
+              min="0"
+              max="10"
+              defaultValue={currentLevel}
+              onChange={(event) => setCurrentLevel(Number(event.target.value))}
+            />
+          </div>
+        </div>
+      </StyleContainer>
+    )
   })
 
 /**
@@ -41,5 +63,14 @@ const SimpleReverbEffectorView: React.FC<SimpleReverbEffectorViewProps> =
  */
 const StyleContainer = styled.div`
   display: flex;
+
+  > .delay-param-container {
+    display: flex;
+
+    > .delay-param-list-item {
+      display: flex;
+      margin-right: 1em;
+    }
+  }
 `
 export default SimpleReverbEffectorView

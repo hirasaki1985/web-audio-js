@@ -13,8 +13,8 @@ export default class SimpleDelayEffector
   private viewEffectorRef = createRef<SimpleDelayEffectorViewRefProps>()
 
   private defaultViewProps: SimpleDelayEffectorViewProps = {
-    delayTime: 0,
-    maxDelayTime: 10,
+    delayTime: 2,
+    maxDelayTime: 3,
     feedbackGainValue: 0.5,
     // dryGainValue: 0.7, // 原音
     wetGainValue: 0.3, // エフェクトオン

@@ -6,7 +6,7 @@ import EffectorFactory from '../effectors/EffectorFactory'
  * interfaces
  */
 export interface AudioLoadCallbacks {
-  success: (buffer: AudioBuffer) => void
+  success: (track: Track) => void
   error: () => void
 }
 
@@ -317,14 +317,17 @@ export default class AudioController {
          * success
          */
         (_decodeResultBuffer) => {
-          // add to api sounds
-          this.apiSounds.push({
+          const _track: Track = {
             name: _decodeName,
             viewName: _decodeViewName,
             buffer: _decodeResultBuffer,
-          })
+          }
+          // add to api sounds
+          this.apiSounds.push(_track)
 
-          if (callbacks) callbacks.success(_decodeResultBuffer)
+          if (callbacks) callbacks.success(_track)
+
+          return _track
         },
 
         /**

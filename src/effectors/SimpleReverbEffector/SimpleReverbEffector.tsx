@@ -13,8 +13,7 @@ export default class SimpleReverbEffector
   private viewEffectorRef = createRef<SimpleReverbEffectorViewRefProps>()
 
   private defaultViewProps: SimpleReverbEffectorViewProps = {
-    dryGainValue: 0,
-    wetGainValue: 10,
+    level: 5,
   }
 
   // public
