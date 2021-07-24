@@ -86,7 +86,7 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
                     }`}
                   >
                     <FontAwesomeIcon
-                      icon={faVolumeMute}
+                      icon={_audio.state.mute ? faVolumeMute : faVolumeUp}
                       style={iconStyle}
                       onClick={() => {
                         _audio.state.mute = !_audio.state.mute

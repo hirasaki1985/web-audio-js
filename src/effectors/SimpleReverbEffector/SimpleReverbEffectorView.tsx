@@ -42,7 +42,7 @@ const SimpleReverbEffectorView: React.FC<SimpleReverbEffectorViewProps> =
         <div className="delay-param-container">
           {/* delay time */}
           <div className="delay-param-list-item">
-            <div className="title">delay time:</div>
+            <div className="title">level:</div>
             <input
               type="range"
               id="points"

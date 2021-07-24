@@ -193,8 +193,8 @@ function App() {
       setEffectorList(_effectors)
 
       // set mixer
-      mixerController.createMixer(_track1, [_effectors[0], _effectors[2]])
-      mixerController.createMixer(_track2, [_effectors[1], _effectors[2]])
+      mixerController.createMixer(_track1, [_effectors[0]])
+      mixerController.createMixer(_track2, [_effectors[1]])
       setAudioMixer({
         chains: mixerController.getMixerChains(),
       })
@@ -311,6 +311,7 @@ function App() {
 
       {/* effector list */}
       <div className="effector-list">
+        <div>エフェクター</div>
         <div className="effector-list-container">
           <EffectorListOrganism effectors={effectorList} />
         </div>
@@ -318,20 +319,23 @@ function App() {
 
       {/* mixer list */}
       <div className="mixer-list">
+        <div>音声出力経路</div>
         <MixerOrganism mixer={audioMixer} />
       </div>
     </StyleContainer>
   )
 }
 
-export default App
-
+/**
+ * style
+ */
 const StyleContainer = styled.div`
   height: 100%;
 
   > .app-header {
   }
 
+  // audio list
   > .audio-list {
     width: 100%;
     background-color: #ecf3f8;
@@ -348,10 +352,19 @@ const StyleContainer = styled.div`
     }
   }
 
-  .effector-list-container {
-    padding-bottom: 1em;
+  // effector list
+  .effector-list {
+    padding: 1em;
+    .effector-list-container {
+      padding-bottom: 1em;
+    }
   }
 
+  // mixer list
   .mixer-list {
+    background-color: #ecf3f8;
+    padding: 1em;
   }
 `
+
+export default App
