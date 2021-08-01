@@ -107,8 +107,12 @@ export default class AudioController {
         source,
       })
 
-      // connect
-      let connects: AudioNode = source
+      // connect track gain
+      const trackGain = this.audioContext.createGain()
+      trackGain.gain.value = _chain.track.state.volume
+      let connects: AudioNode = source.connect(trackGain)
+
+      // connect effectors
       _chain.effectors.forEach((_effector) => {
         connects = _effector.connect(connects)
       })

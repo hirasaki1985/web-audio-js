@@ -9,8 +9,9 @@ import {
   TrackListItem,
   TrackListItemViewParam,
   TrackListViewParam,
+  TrackState,
 } from '../@types/AudioType'
-import AppConst from '../consts/AppConst'
+import WavAudioMixerConst from '../consts/AppConst'
 import AudioFrequencyHelper from '../helpers/AudioFrequencyHelper'
 import AudioListOrganism from '../components/organisms/AudioListOrganism'
 import DragAreaOrganism from '../components/organisms/DragAreaOrganism'
@@ -54,17 +55,17 @@ const WevAudioMixer: React.FC<WebAudioMixerProps> = (
   // track view param
   const [trackListViewParam, setTrackListViewParam] =
     useState<TrackListViewParam>({
-      frequencyHeight: AppConst.VIEW.FREQUENCY_HEIGHT,
-      frequencyItemWidth: AppConst.VIEW.FREQUENCY_ITEM_WIDTH,
-      frequencyLeftMargin: AppConst.VIEW.FREQUENCY_LEFT_MARGIN,
-      secondPixel: AppConst.VIEW.SECOND_PIXEL,
-      magnification: AppConst.VIEW.MAGNIFICATION,
+      frequencyHeight: WavAudioMixerConst.VIEW.FREQUENCY_HEIGHT,
+      frequencyItemWidth: WavAudioMixerConst.VIEW.FREQUENCY_ITEM_WIDTH,
+      frequencyLeftMargin: WavAudioMixerConst.VIEW.FREQUENCY_LEFT_MARGIN,
+      secondPixel: WavAudioMixerConst.VIEW.SECOND_PIXEL,
+      magnification: WavAudioMixerConst.VIEW.MAGNIFICATION,
     })
 
   const [trackListItemViewParam, setTrackListItemViewParam] =
     useState<TrackListItemViewParam>({
-      nameWidth: AppConst.VIEW.NAME_WIDTH,
-      namePadding: AppConst.VIEW.NAME_CONTAINER_PADDING,
+      nameWidth: WavAudioMixerConst.VIEW.NAME_WIDTH,
+      namePadding: WavAudioMixerConst.VIEW.NAME_CONTAINER_PADDING,
       maxFrequencyWidth: 0,
     })
 
@@ -83,7 +84,9 @@ const WevAudioMixer: React.FC<WebAudioMixerProps> = (
    * getFrequencyWidth
    */
   const getFrequencyWidth = (_duration: number): number =>
-    _duration * AppConst.VIEW.SECOND_PIXEL * AppConst.VIEW.MAGNIFICATION
+    _duration *
+    WavAudioMixerConst.VIEW.SECOND_PIXEL *
+    WavAudioMixerConst.VIEW.MAGNIFICATION
 
   /**
    * loadAudioFile
@@ -136,8 +139,8 @@ const WevAudioMixer: React.FC<WebAudioMixerProps> = (
               maxFrequencyWidth: getFrequencyWidth(
                 audioController.getMaxDuration(),
               ),
-              nameWidth: AppConst.VIEW.NAME_WIDTH,
-              namePadding: AppConst.VIEW.NAME_CONTAINER_PADDING,
+              nameWidth: WavAudioMixerConst.VIEW.NAME_WIDTH,
+              namePadding: WavAudioMixerConst.VIEW.NAME_CONTAINER_PADDING,
             })
 
             resolve(_trackListItem)
@@ -235,7 +238,7 @@ const WevAudioMixer: React.FC<WebAudioMixerProps> = (
    * frequency: on mouse click
    */
   const frequencyOnMouseClick = async (_position: ObjectPosition) => {
-    console.log('App frequencyOnMouseClick', _position)
+    console.log('WavAudioMixer frequencyOnMouseClick', _position)
     setAudioCurrentState({
       timePosition: AudioFrequencyHelper.convertTime(
         _position.x,
@@ -261,7 +264,7 @@ const WevAudioMixer: React.FC<WebAudioMixerProps> = (
    * トラックの状態が変更された時
    */
   const onChangeTrackItemState = (_track: TrackListItem, _index: number) => {
-    console.log('App onChangeTrackItemState')
+    console.log('WavAudioMixer onChangeTrackItemState')
     console.log({
       _track,
       _index,
@@ -269,6 +272,25 @@ const WevAudioMixer: React.FC<WebAudioMixerProps> = (
 
     const _trackList = trackList.concat()
     _trackList[_index].state = _track.state
+    setTrackList(_trackList)
+  }
+
+  /**
+   * トラックの状態が変更された時
+   */
+  const onChangeTrackState = (
+    _track: Track,
+    _state: TrackState,
+    _index: number,
+  ) => {
+    console.log('WavAudioMixer onChangeTrackState')
+    console.log({
+      _track,
+      _state,
+      _index,
+    })
+    const _trackList = trackList.concat()
+    _trackList[_index].state = _state
     setTrackList(_trackList)
   }
 
@@ -285,7 +307,7 @@ const WevAudioMixer: React.FC<WebAudioMixerProps> = (
       _track.track.name,
       {
         onEnd: () => {
-          console.log('App onClickPlay onEnd()')
+          console.log('WavAudioMixer onClickPlay onEnd()')
           const _tl = trackList.concat()
           _track.state.isPlay = false
           _tl[_index].state = _track.state
@@ -298,7 +320,7 @@ const WevAudioMixer: React.FC<WebAudioMixerProps> = (
   }
 
   return (
-    <StyleContainer className="App">
+    <StyleContainer className="WavAudioMixer">
       {/* header */}
       <div className="app-header" />
 
@@ -314,6 +336,7 @@ const WevAudioMixer: React.FC<WebAudioMixerProps> = (
             frequencyOnMouseClick={frequencyOnMouseClick}
             onChangeTrackItemState={onChangeTrackItemState}
             onClickPlay={onClickPlay}
+            onChangeTrackState={onChangeTrackState}
           />
         </div>
 

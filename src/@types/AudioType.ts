@@ -10,7 +10,7 @@ export interface Track {
 }
 
 export interface TrackState {
-  width: number // 波形の長sだ
+  width: number // 波形の長さ
   mute: boolean // ミュート中かどうか
   isPlay: boolean // 再生中かどうか
   volume: number // 音量

@@ -16,6 +16,8 @@ import {
   TrackListItemViewParam,
   TrackListViewParam,
   ObjectPosition,
+  TrackState,
+  Track,
 } from '../../@types/AudioType'
 
 /**
@@ -29,6 +31,11 @@ export interface AudioListOrganismProps {
   frequencyOnMouseClick: (position: ObjectPosition) => void
   onChangeTrackItemState: (_track: TrackListItem, _index: number) => void
   onClickPlay: (_track: TrackListItem, _index: number) => void
+  onChangeTrackState: (
+    _track: Track,
+    _state: TrackState,
+    _index: number,
+  ) => void
 }
 
 const AudioListOrganism: React.FC<AudioListOrganismProps> = (
@@ -43,6 +50,7 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
     frequencyOnMouseClick,
     onChangeTrackItemState,
     onClickPlay,
+    onChangeTrackState,
   } = props
 
   // state
@@ -123,8 +131,18 @@ const AudioListOrganism: React.FC<AudioListOrganismProps> = (
                     min="0"
                     max="10"
                     defaultValue={_audio.state.volume}
+                    value={_audio.state.volume}
                     onChange={(event) => {
-                      _audio.state.volume = Number(event.target.value)
+                      onChangeTrackState(
+                        _audio.track,
+                        {
+                          width: _audio.state.width,
+                          volume: Number(event.target.value),
+                          isPlay: _audio.state.isPlay,
+                          mute: _audio.state.mute,
+                        },
+                        _index,
+                      )
                     }}
                   />
                 </div>
