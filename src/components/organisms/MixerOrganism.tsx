@@ -4,12 +4,13 @@ import styled from 'styled-components'
 
 export interface MixerOrganismProps {
   mixer: AudioMixer
+  onClickMaster: () => void
 }
 
 const MixerOrganism: React.FC<MixerOrganismProps> = (
   props: MixerOrganismProps,
 ) => {
-  const { mixer } = props
+  const { mixer, onClickMaster } = props
 
   return (
     <StyleContainer>
@@ -33,7 +34,9 @@ const MixerOrganism: React.FC<MixerOrganismProps> = (
           </ul>
         ))}
       </div>
-      <div className="chain-master-container">master</div>
+      <div className="chain-master-container" onClick={onClickMaster}>
+        master
+      </div>
     </StyleContainer>
   )
 }
@@ -95,6 +98,7 @@ const StyleContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
   }
 `
 

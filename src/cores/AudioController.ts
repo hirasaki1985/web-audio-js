@@ -1,4 +1,4 @@
-import { Track } from '../@types/AudioType'
+import { AudioMixer, AudioMixerChain, Track } from '../@types/AudioType'
 import ArrayUtil from '../Utils/ArrayUtil'
 import EffectorFactory from '../effectors/EffectorFactory'
 
@@ -60,7 +60,81 @@ export default class AudioController {
   /**
    * playWithMixer
    */
-  public playWithMixer = async () => {}
+  public playWithMixer = async (
+    mixer: AudioMixer,
+    callbacks: { onEnd: (chain: AudioMixerChain) => void },
+    when: number = 0,
+    offset: number = 0,
+  ) => {
+    console.log('AudioController playWithMixer()')
+    console.log({
+      mixer,
+      when,
+      offset,
+    })
+    // validate
+    if (mixer == null || mixer.chains == null || mixer.chains.length === 0)
+      return
+
+    // create master
+    const master = mixer.master.getAudioNode()
+    master.connect(this.audioContext.destination)
+
+    // set effectors
+    const sources: {
+      node: AudioBufferSourceNode
+      connect: AudioNode
+      chain: AudioMixerChain
+    }[] = []
+
+    mixer.chains.forEach((_chain) => {
+      console.log('mixer.chains.forEach', _chain)
+
+      // validate
+      if (_chain.track.track.buffer == null) return
+
+      // mute
+      if (_chain.track.state.mute) return
+
+      // create source
+      const buffer = this.getMergedAudioBuffer([_chain.track.track.buffer])
+      const source: AudioBufferSourceNode =
+        this.audioContext.createBufferSource()
+      source.buffer = buffer
+
+      console.log({
+        buffer,
+        source,
+      })
+
+      // connect
+      let connects: AudioNode = source
+      _chain.effectors.forEach((_effector) => {
+        connects = _effector.connect(connects)
+      })
+
+      sources.push({
+        node: source,
+        connect: connects,
+        chain: _chain,
+      })
+    })
+
+    console.log({
+      sources,
+    })
+
+    // connect to master, play
+    sources.forEach((_source) => {
+      // validate
+      if (_source.node == null || _source.node.buffer == null) return
+      _source.connect.connect(master)
+
+      // play
+      _source.node.onended = () => callbacks.onEnd(_source.chain)
+      _source.node.start(when, offset, _source.node.buffer.duration)
+    })
+  }
 
   /**
    * playWithEffectors
@@ -93,10 +167,6 @@ export default class AudioController {
       const master = this.audioContext.createGain()
       master.gain.value = masterGainValue
 
-      // oscillator
-      // const oscillator = this.audioContext.createOscillator()
-      // oscillator.connect(master)
-
       // get buffer
       const buffer = this.getMergedAudioBuffer([sound.buffer])
 
@@ -112,26 +182,10 @@ export default class AudioController {
       wet.gain.value = wetGainValue
       feedback.gain.value = feedbackGainValue
 
-      // reverb
-      // const convolver = this.audioContext.createConvolver()
-      // convolver.buffer = buffer
-
       // create buffer source
       const source: AudioBufferSourceNode =
         this.audioContext.createBufferSource()
       source.buffer = buffer
-      // source.connect(master)
-
-      // Connect nodes for original sound
-      // OscillatorNode (Input) -> AudioDestinationNode (Output)
-      // source.connect(oscillator).connect(this.audioContext.destination)
-
-      // Connect nodes for effect (Delay) sound
-      // OscillatorNode (Input) -> DelayNode (Delay) -> AudioDestinationNode (Output)
-      // oscillator.connect(delay)
-      // delay.connect(master)
-
-      // feedback connect
 
       // base sound -> dry -> master
       source.connect(dry).connect(master)
@@ -144,25 +198,6 @@ export default class AudioController {
 
       // master
       master.connect(this.audioContext.destination)
-
-      // connect
-      // source
-      // .connect(delay)
-      // .connect(convolver)
-      // .connect(this.audioContext.destination)
-
-      // source.connect(this.audioContext.destination)
-      // delay.connect(this.audioContext.destination)
-      // convolver.connect(this.audioContext.destination)
-
-      // oscillator.connect(this.audioContext.destination)
-
-      // oscillator.connect(convolver)
-      // convolver.connect(this.audioContext.destination)
-
-      // oscillator.connect(this.audioContext.destination)
-      // oscillator.connect(delay)
-      // oscillator.connect(effector)
 
       // play
       source.onended = () => callbacks.onEnd()
@@ -259,9 +294,6 @@ export default class AudioController {
     // Create the instance of OscillatorNode
     const oscillator = this.audioContext.createOscillator()
 
-    // for legacy browsers
-    // oscillator.start = oscillator.start || oscillator.noteOn
-    // oscillator.stop = oscillator.stop || oscillator.noteOff
     // OscillatorNode (Input) -> AnalyserNode (Visualization) -> AudioDestinationNode (Output)
     oscillator.connect(analyser)
     analyser.connect(this.audioContext.destination)

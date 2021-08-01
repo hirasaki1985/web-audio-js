@@ -55,7 +55,6 @@ export default class SimpleDelayEffector
     const currentParams = this.getViewParameter()
     const delay = this.getAudioNode()
 
-    // const dry = this.audioContext.createGain()
     const wet = this.audioContext.createGain()
     const feedback = this.audioContext.createGain()
 
@@ -72,9 +71,9 @@ export default class SimpleDelayEffector
    * getAudioNode
    */
   public getAudioNode(): AudioNode {
-    const delay = this.audioContext.createDelay(
-      this.defaultViewProps.maxDelayTime,
-    )
+    const currentParams = this.getViewParameter()
+    const delay = this.audioContext.createDelay(currentParams.maxDelayTime)
+    delay.delayTime.value = currentParams.delayTime
     return delay
   }
 

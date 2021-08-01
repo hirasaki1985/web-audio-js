@@ -1,6 +1,8 @@
 /**
  * track
  */
+import MasterEffector from '../effectors/master/MasterEffector'
+
 export interface Track {
   name: string
   viewName: string
@@ -38,6 +40,7 @@ export interface AudioViewEffectorBaseRefProps {}
  */
 export interface AudioMixer {
   chains: AudioMixerChain[]
+  master: MasterEffector
 }
 
 export interface AudioMixerChain {
